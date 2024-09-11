@@ -1,0 +1,102 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Cursive', sans-serif;
+    background-color: #f8eaea;
+}
+
+/* --------------------------------NavBar.css --------------------------------------*/
+
+.navbar {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background-color: #f0f0f0;
+    padding: 10px 0;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+}
+
+.nav-Link {
+    color: #333;
+    text-decoration: none;
+    transition: color 0.3s;
+    text-align: center;
+}
+
+.nav-Link i {
+    font-size: 25px;
+}
+
+.nav-Link p {
+    font-size: 15;
+    margin: 0;
+}
+
+.nav-Link:hover {
+    color: #6f42c1;
+}
+
+.active-link {
+    color: #6f42c1;
+    font-weight: bold;
+}
+
+/* ---------------------------------Menu Fecha------------------------------------- */
+
+
+.menuFecha {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+}
+
+.menuFechaAño {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.menuFechaMes {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+}
+
+.menuFechaMes div {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    text-align: center;
+}
+
+.menuFecha h1,
+.menuFecha h2,
+.menuFecha h3 {
+    margin: 0;
+    color: #b3545e;
+}
+
+.menuFecha i {
+    font-size: 1.5rem;
+}
+
+.menuFechaMes button {
+    border: none;
+    background: none;
+    cursor: pointer;
+    width: 100px;
+}
+
+.menuFechaAño i {
+    cursor: pointer;
+}
