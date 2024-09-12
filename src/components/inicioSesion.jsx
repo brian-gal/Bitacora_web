@@ -1,6 +1,7 @@
 import { getDocs, collection, query, where, setDoc, doc } from "firebase/firestore";
 import { db } from "../services/firebaseConfig.js";
 import { useState } from "react"; // Necesario para manejar el estado del formulario
+import { useEffect } from "react";
 
 const InicioSesion = () => {
     const [registerEmail, setRegisterEmail] = useState("");
@@ -8,6 +9,17 @@ const InicioSesion = () => {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [loginEmail, setLoginEmail] = useState(""); // Para el inicio de sesión
     const [loginPassword, setLoginPassword] = useState(""); // Para el inicio de sesión
+
+    useEffect(() => {
+        let users = localStorage.getItem('sesion_iniciada');
+
+        if (users == null && users == undefined) {
+            const loginModal = new window.bootstrap.Modal(document.getElementById("loginModal"));
+            loginModal.show();
+        }
+
+
+    }, []);
 
     // Función para manejar la creación de cuenta
     const handleCreateAccount = async () => {
@@ -32,7 +44,14 @@ const InicioSesion = () => {
                 email: registerEmail,
                 password: registerPassword
             });
-            alert("Cuenta creada exitosamente");
+            alert("Cuenta creada exitosamente, inicie sesion");
+
+            // Simular el clic en el botón "Iniciar Sesión" del modal de registro
+            const loginModalButton = document.querySelector("#registerModal .btn-secondary");
+            if (loginModalButton) {
+                loginModalButton.click();
+            }
+
         } catch (error) {
             console.error("Error al crear la cuenta: ", error);
         }
@@ -51,34 +70,39 @@ const InicioSesion = () => {
             }
 
             // Verificar si la contraseña ingresada coincide
+            let loginSuccessful = false;
             querySnapshot.forEach((doc) => {
                 const userData = doc.data();
                 if (userData.password === loginPassword) {
                     alert("Inicio de sesión exitoso");
 
                     // Guardar la sesión iniciada en localStorage
-                    localStorage.setItem("sesion_iniciada", "True");
+                    localStorage.setItem("sesion_iniciada", loginEmail);
+
+                    // Indicar que el inicio de sesión fue exitoso
+                    loginSuccessful = true;
                 } else {
                     alert("Contraseña incorrecta");
                 }
             });
+
+            // Cerrar el modal solo si el inicio de sesión fue exitoso
+            if (loginSuccessful) {
+                const loginModalElement = document.getElementById("loginModal");
+                const loginModal = window.bootstrap.Modal.getInstance(loginModalElement);
+                if (loginModal) {
+                    loginModal.hide();
+                }
+            }
         } catch (error) {
             console.error("Error al iniciar sesión: ", error);
         }
     };
 
 
+
     return (
         <div>
-            {/* Button trigger modal for login */}
-            <button
-                type="button"
-                className="btn btn-primary"
-                data-bs-toggle="modal"
-                data-bs-target="#loginModal"
-            >
-                Launch login modal
-            </button>
 
             {/* Login Modal */}
             <div
