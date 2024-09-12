@@ -1,7 +1,10 @@
 import { getDocs, collection, query, where, setDoc, doc } from "firebase/firestore";
 import { db } from "../services/firebaseConfig.js";
-import { useState } from "react"; // Necesario para manejar el estado del formulario
+import { useContext, useState } from "react"; // Necesario para manejar el estado del formulario
 import { useEffect } from "react";
+import { FireContext } from "../context/fireContext.jsx";
+
+
 
 const InicioSesion = () => {
     const [registerEmail, setRegisterEmail] = useState("");
@@ -9,17 +12,16 @@ const InicioSesion = () => {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [loginEmail, setLoginEmail] = useState(""); // Para el inicio de sesión
     const [loginPassword, setLoginPassword] = useState(""); // Para el inicio de sesión
+    const { sesionIniciada } = useContext(FireContext);
 
     useEffect(() => {
-        let users = localStorage.getItem('sesion_iniciada');
 
-        if (users == null && users == undefined) {
+        if (!sesionIniciada) {
             const loginModal = new window.bootstrap.Modal(document.getElementById("loginModal"));
             loginModal.show();
         }
 
-
-    }, []);
+    }, [sesionIniciada]);
 
     // Función para manejar la creación de cuenta
     const handleCreateAccount = async () => {

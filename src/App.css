@@ -9,7 +9,7 @@ body {
     background-color: #f8eaea;
 }
 
-.contendor {
+.contenedor {
     margin-bottom: 85px;
 }
 
@@ -139,6 +139,18 @@ body {
     /* Desactivar la opción de redimensionar manualmente */
     overflow: hidden;
     /* Esconder barras de scroll */
+    line-height: 1.6;
+}
+
+.textarea-enseñanzas {
+    width: 90%;
+    min-height: 200px;
+    padding: 20px;
+    font-size: 1.2rem;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    outline: none;
+    resize: none;
     line-height: 1.6;
 }
 

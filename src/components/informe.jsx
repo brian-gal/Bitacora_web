@@ -1,6 +1,8 @@
+import MenuFecha from "./menuFecha"
+
 const Informe = () => {
     return (
-        <p>hola</p>
+        <MenuFecha />
     )
 }
 
