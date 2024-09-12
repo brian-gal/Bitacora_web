@@ -7,6 +7,7 @@ import InicioSesion from './components/inicioSesion';
 import Notas from './components/notas';
 import { FireProvider } from './context/fireContext';
 import Enseñanzas from './components/enseñanzas';
+import FechasEspeciales from './components/fechasEspeciales';
 
 function App() {
 
@@ -18,8 +19,9 @@ function App() {
           <InicioSesion />
           <div className='contenedor'>
             <Routes>
-              <Route path="/enseñanzas" element={<Enseñanzas />} />
               <Route path="/" element={<Informe />} />
+              <Route path="/enseñanzas" element={<Enseñanzas />} />
+              <Route path="/fechas" element={<FechasEspeciales />} />
               <Route path="/notas" element={<Notas titulo="Notas" texto="Escribe tus notas aquí..." clases="textarea-notas" esMensual={false} />} />
             </Routes>
           </div>

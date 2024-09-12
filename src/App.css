@@ -173,3 +173,49 @@ body {
     cursor: pointer;
     transition: background-color 0.3s;
 }
+
+/* ----------------------------------------------Fechas------------------------------------ */
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center;
+    background-color: #f8eaea;
+    background-repeat: no-repeat;
+    background-position: top center;
+    background-size: cover;
+}
+
+.input-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.input-grid div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.input-grid div label {
+    font-family: 'Cursive', sans-serif;
+    color: #9b4d4d;
+    margin-bottom: 10px;
+}
+
+.input-grid div input[type="date"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #f8eaea;
+    border-radius: 20px;
+    background-color: #ffdcdc;
+    text-align: center;
+    font-size: 1rem;
+    font-family: 'Arial', sans-serif;
+}
+
+.botonFechas {
+    margin-top: 20px;
+}
