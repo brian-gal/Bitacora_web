@@ -4,6 +4,7 @@ import NavBar from './components/navBar';
 import MenuFecha from './components/menuFecha';
 import { DataProvider } from './context/dateContext';
 import Informe from './components/informe';
+import InicioSesion from './components/inicioSesion';
 
 function App() {
 
@@ -14,7 +15,7 @@ function App() {
         <MenuFecha />
         <div className='contendor'>
           <Routes>
-            <Route path="/" element={<Informe />} />
+            <Route path="/" element={<InicioSesion />} />
           </Routes>
         </div>
         <NavBar />
