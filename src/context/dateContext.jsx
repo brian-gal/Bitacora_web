@@ -50,6 +50,11 @@ export const DataProvider = ({ children }) => {
         }
     };
 
+    const fechaActual = () => {
+        setMes(date.getMonth())
+        setAño(date.getFullYear())
+    }
+
     return (
         <DataContext.Provider
             value={{
@@ -57,6 +62,7 @@ export const DataProvider = ({ children }) => {
                 dia,
                 mes,
                 año,
+                fechaActual,
                 retrocederMes,
                 avanzarMes,
                 retrocederAño,

@@ -2,7 +2,7 @@ import { useContext } from "react"
 import { DataContext } from "../context/dateContext"
 
 const MenuFecha = () => {
-    const { meses, dia, mes, año, retrocederMes, avanzarMes, retrocederAño, avanzarAño } = useContext(DataContext)
+    const { fechaActual, meses, dia, mes, año, retrocederMes, avanzarMes, retrocederAño, avanzarAño } = useContext(DataContext)
 
     // Asegurarse de que los índices estén dentro del rango válido
     const mesPrevio = mes > 0 ? meses[mes - 1] : meses[11]; // Mes anterior (Diciembre si es Enero)
@@ -17,7 +17,7 @@ const MenuFecha = () => {
             </div>
             <div className="menuFechaMes">
                 <button onClick={retrocederMes}>{mesPrevio}</button>
-                <div>
+                <div onClick={fechaActual}>
                     <h2>{meses[mes]}</h2>
                     <h3>{dia}</h3>
                 </div>
