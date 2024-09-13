@@ -6,27 +6,28 @@ const FechasEspeciales = () => {
         const savedData = localStorage.getItem('fechasEspeciales');
 
         return savedData ? JSON.parse(savedData) : [
-            { label: 'Asamblea de Circuito', date: '' },
-            { label: 'Asamblea de Circuito 2', date: '' },
-            { label: 'Asamblea Regional', date: '' },
-            { label: 'Visita del superintendente', date: '' },
-            { label: 'Conmemoración', date: '' },
+            { label: 'Asamblea de Circuito', date: '', fecha: '' },
+            { label: 'Asamblea de Circuito 2', date: '', fecha: '' },
+            { label: 'Asamblea Regional', date: '', fecha: '' },
+            { label: 'Visita del superintendente', date: '', fecha: '' },
+            { label: 'Conmemoración', date: '', fecha: '' },
         ];
     };
 
-    const [fechas, setFechas] = useState(loadFromLocalStorage);
+    const [calendario, setCalendario] = useState(loadFromLocalStorage);
     const [newDateLabel, setNewDateLabel] = useState('');
 
     // Guardar datos en localStorage cada vez que el estado cambia
     useEffect(() => {
-        localStorage.setItem('fechasEspeciales', JSON.stringify(fechas));
-    }, [fechas]);
+        localStorage.setItem('fechasEspeciales', JSON.stringify(calendario));
+    }, [calendario]);
 
     // Maneja el cambio en los inputs de fecha
     const handleDateChange = (index, newDate) => {
-        const updatedFechas = [...fechas];
+        const updatedFechas = [...calendario];
         updatedFechas[index].date = newDate;
-        setFechas(updatedFechas);
+        updatedFechas[index].fecha = new Date().toLocaleString();
+        setCalendario(updatedFechas);
     };
 
     // Maneja el cambio en los inputs del modal
@@ -37,8 +38,8 @@ const FechasEspeciales = () => {
     // Agregar nueva fecha
     const handleAddDate = () => {
         if (newDateLabel) {
-            const updatedFechas = [...fechas, { label: newDateLabel, date: '' }];
-            setFechas(updatedFechas);
+            const updatedFechas = [...calendario, { label: newDateLabel, date: '' }];
+            setCalendario(updatedFechas);
             setNewDateLabel('');
 
             // Cerrar el modal usando bootstrap.Modal.getInstance
@@ -52,15 +53,15 @@ const FechasEspeciales = () => {
 
     // Eliminar fecha
     const handleDeleteDate = (index) => {
-        const updatedFechas = fechas.filter((_, i) => i !== index);
-        setFechas(updatedFechas);
+        const updatedFechas = calendario.filter((_, i) => i !== index);
+        setCalendario(updatedFechas);
     };
 
     return (
         <div className="container">
             <h1 className='titulo'>Fechas especiales</h1>
             <div className="input-grid">
-                {fechas.map((item, index) => (
+                {calendario.map((item, index) => (
                     <div key={index}>
                         <label>{item.label}</label>
                         <input

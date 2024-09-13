@@ -19,7 +19,7 @@ function App() {
           <InicioSesion />
           <div className='contenedor'>
             <Routes>
-              <Route path="/" element={<Informe />} />
+              <Route path="/" element={<Informe titulo="Informe"/>} />
               <Route path="/enseñanzas" element={<Enseñanzas />} />
               <Route path="/fechas" element={<FechasEspeciales />} />
               <Route path="/notas" element={<Notas titulo="Notas" texto="Escribe tus notas aquí..." clases="textarea-notas" esMensual={false} />} />

@@ -14,7 +14,7 @@ const NavBar = () => {
                 to="/fechas"
                 className={({ isActive }) => isActive ? "nav-Link active" : "nav-Link"}
             >
-                <i className="bi bi-calendar-heart-fill"></i>
+                <i className="bi bi-calendar-heart"></i>
                 <p>Fechas</p>
             </NavLink>
             <NavLink

@@ -23,7 +23,7 @@ body {
     bottom: 0;
     width: 100%;
     background-color: #f0f0f0;
-    padding: 10px 0;
+    padding: 5px  0 0;
     box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
     z-index: 1000;
 }
@@ -166,7 +166,7 @@ body {
 
 .scroll-to-bottom {
     position: fixed;
-    bottom: 90px;
+    bottom: 70px;
     right: 10px;
     color: rgb(255, 0, 0);
     font-size: 40px;
@@ -218,4 +218,38 @@ body {
 
 .botonFechas {
     margin-top: 20px;
+}
+
+/* .....................................Informe.......................... */
+.activity-table {
+    width: 90%;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center;
+    border-collapse: collapse;
+    background-color: white;
+    margin-top: 10px;
+}
+
+.activity-table th, .activity-table td {
+    border: 1px solid #000;
+    padding: 10px;
+    text-align: center;
+}
+
+.activity-table input {
+    width: 80%;
+    padding: 5px;
+    text-align: center;
+    border: none;
+    outline: none;
+    background-color: #ffeff3;
+}
+
+.actividad-container {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center;
 }
