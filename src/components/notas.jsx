@@ -2,16 +2,14 @@ import { useState, useEffect, useRef, useContext } from 'react';
 import { DataContext } from '../context/dateContext';
 
 const Notas = ({ titulo, texto, clases, esMensual }) => {
-
-    const { mes, año } = useContext(DataContext)
+    const { mes, año } = useContext(DataContext);
     const [content, setContent] = useState('');
+    const [initialContent, setInitialContent] = useState('');  // Estado para el contenido inicial
     const [fecha, setFecha] = useState('');
     const [guardado, setguardado] = useState(false);
 
-    const timerGuardadoRef = useRef(null);  // Ref para almacenar el temporizador
+    const timerGuardadoRef = useRef(null);
 
-
-    // Función para verificar si el string es JSON válido
     const isJSON = (str) => {
         try {
             JSON.parse(str);
@@ -22,60 +20,94 @@ const Notas = ({ titulo, texto, clases, esMensual }) => {
         return true;
     };
 
-    // Obtener las notas del localStorage
+    // Obtener los datos desde el storage
     useEffect(() => {
-        const storedData = localStorage.getItem(titulo);
-        if (esMensual) {
-            if (storedData && isJSON(storedData)) {
-                const { content: savedContent, fecha: savedFecha, mes: savedMes, año: savedAño } = JSON.parse(storedData);
+        const fetchData = () => {
+            if (esMensual) {
+                const storedData = localStorage.getItem(`${titulo}-${año}`);
+                let storedArray = Array(12).fill(null);
 
-                if (savedMes === mes && savedAño === año) {
-                    setContent(savedContent || '');
-                    setFecha(savedFecha || '');
+                if (storedData && isJSON(storedData)) {
+                    storedArray = JSON.parse(storedData);
+                }
+
+                const savedData = storedArray[mes];
+
+                if (savedData) {
+                    setContent(savedData.content || '');
+                    setInitialContent(savedData.content || '');  // Guardar el contenido inicial
+                    setFecha(savedData.fecha || '');
                 } else {
-                    console.log('No hay datos para esta fecha');
-                    setContent('')
+                    setContent('');
+                    setInitialContent('');  // Limpiar el contenido inicial también
+                    setFecha('');
                 }
             } else {
-                console.log('No hay datos válidos en el localStorage');
+                const storedData = localStorage.getItem(titulo);
+                if (storedData && isJSON(storedData)) {
+                    const { content: savedContent, fecha: savedFecha } = JSON.parse(storedData);
+                    setContent(savedContent || '');
+                    setInitialContent(savedContent || '');  // Guardar el contenido inicial
+                    setFecha(savedFecha || '');
+                } else {
+                    setContent('');
+                    setInitialContent('');  // Limpiar el contenido inicial también
+                    setFecha('');
+                }
             }
-        } else {
-            if (storedData && isJSON(storedData)) {
-                const { content: savedContent, fecha: savedFecha } = JSON.parse(storedData);
-                setContent(savedContent || '');
-                setFecha(savedFecha || '');
-            } else if (storedData) {
-                // Si no es JSON válido, lo tratamos como contenido simple
-                setContent(storedData);
-            }
-        }
+        };
+
+        fetchData();
     }, [titulo, esMensual, mes, año]);
 
+    // Guardar los datos en el storage
     useEffect(() => {
-        setguardado(false)
-        // Limpiar el temporizador anterior si existe
+        // Limpiar el timer si el contenido ha cambiado
         if (timerGuardadoRef.current) {
             clearTimeout(timerGuardadoRef.current);
         }
 
-        // Iniciar un nuevo temporizador
+        // Si el contenido es igual al inicial, no hacemos nada
+        if (content === initialContent) {
+            if (content.trim() === '' && initialContent.trim() !== '') {
+                setguardado(false);  // Permitir el guardado si se ha borrado el contenido
+            } else {
+                return setguardado(true);  // No guardar si el contenido no ha cambiado
+            }
+        }
+
+        setguardado(false);
+
         timerGuardadoRef.current = setTimeout(() => {
             const currentFecha = new Date().toLocaleString();
 
-            // Construir el objeto de datos basado en la condición esMensual
-            const data = esMensual
-                ? { content, fecha: currentFecha, mes, año }
-                : { content, fecha: currentFecha };
+            if (esMensual) {
+                const storedData = localStorage.getItem(`${titulo}-${año}`);
+                let storedArray = Array(12).fill(null);
 
-            // Guardar los datos en localStorage y actualizar la fecha en el estado
-            localStorage.setItem(titulo, JSON.stringify(data));
+                if (storedData && isJSON(storedData)) {
+                    storedArray = JSON.parse(storedData);
+                }
+
+                const newEntry = {
+                    content,
+                    fecha: currentFecha,
+                    mes,
+                    año
+                };
+
+                storedArray[mes] = newEntry;
+                localStorage.setItem(`${titulo}-${año}`, JSON.stringify(storedArray));
+            } else {
+                const data = { content, fecha: currentFecha };
+                localStorage.setItem(titulo, JSON.stringify(data));
+            }
+
             setFecha(currentFecha);
-            setguardado(true)
+            setguardado(true);
         }, 1000);
-    }, [content, titulo, esMensual, mes, año]);
+    }, [content, titulo, esMensual, mes, año, initialContent]);
 
-
-    // Función para hacer scroll hasta el fondo de la página
     const scrollToBottom = () => {
         window.scrollTo({
             top: document.documentElement.scrollHeight,
@@ -93,7 +125,6 @@ const Notas = ({ titulo, texto, clases, esMensual }) => {
                 onChange={(e) => setContent(e.target.value)}  // Actualiza el estado
             ></textarea>
             <p>{guardado ? `Guardado el: ${fecha}` : "Guardando..."}</p>
-            {/* Botón flotante */}
             <i className="bi bi-arrow-down-circle-fill scroll-to-bottom" onClick={scrollToBottom}></i>
         </div>
     );
