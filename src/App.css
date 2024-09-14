@@ -11,7 +11,7 @@ body {
 
 .contenedor {
     margin-bottom: 85px;
-    margin-top: 45px;
+    margin-top: 60px;
 }
 
 /* --------------------------------NavBar.css --------------------------------------*/
@@ -64,7 +64,7 @@ body {
 .menuFecha {
     position: fixed;
     top: 0;
-    height: 40px;
+    height: 50px;
     width: 100%;
     display: flex;
     align-items: center;
@@ -174,7 +174,7 @@ body {
     bottom: 70px;
     right: 10px;
     color: rgb(255, 0, 0);
-    font-size: 40px;
+    font-size: 30px;
     cursor: pointer;
     transition: background-color 0.3s;
 }

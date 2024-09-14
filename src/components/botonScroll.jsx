@@ -1,59 +1,66 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 
-const BotonScroll = ({botonId, botonPx}) => {
+const BotonScroll = ({ botonId, botonPx }) => {
+    const [visible, setVisible] = useState(false);
+    const [primerToque, setPrimerToque] = useState(true);
     const location = useLocation().pathname;
-    const [containerHeight, setContainerHeight] = useState("");
-    const [viewportHeight, setViewportHeight] = useState("");
-
 
     useEffect(() => {
-    const contenedorTotal = document.getElementById('contenedorTotal');
+        setVisible(true);
+    }, []);
 
-        if (contenedorTotal) {
-            setContainerHeight(contenedorTotal.offsetHeight);
-            setViewportHeight(window.innerHeight - 100);
-        }
-        console.log(contenedorTotal);
-         
-    }, [location]);
+    useEffect(() => {
+        const handleScroll = () => {
+            // Mostrar el botón si el usuario no está al final de la página
+            if (window.scrollY < document.body.scrollHeight - window.innerHeight + 140) {
+                setVisible(true);
+            } else {
+                setVisible(false);
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
     const scrollToPosition = (elementId = null, marginTop = 0) => {
 
-        if (elementId) {
+        if (elementId && primerToque) {
             const element = document.getElementById(elementId);
             if (element) {
-                // Desplazar el elemento para que esté en vista
+                // Desplazar el elemento específico
                 element.scrollIntoView({
-                    behavior: 'smooth', // Desplazamiento suave
-                    block: 'start'      // Alinear el elemento con la parte superior de la ventana
+                    behavior: 'smooth',
+                    block: 'start'
                 });
 
-                // Ajustar la posición para asegurar que el elemento quede alineado con un margen superior
                 const elementPosition = element.getBoundingClientRect().top + window.scrollY;
                 window.scrollTo({
-                    top: elementPosition - marginTop, // Aplicar el margen superior aquí
+                    top: elementPosition - marginTop,
                     behavior: 'smooth'
                 });
+                setPrimerToque(false)
             }
         } else {
-            // Si no se pasa un ID, desplazarse al final de la página
+            // Desplazar hacia el final de la página
             window.scrollTo({
-                top: document.documentElement.scrollHeight,  // Desplazar al final
+                top: document.body.scrollHeight,
                 behavior: 'smooth'
             });
+            setPrimerToque(true)
         }
     };
+    console.log(location);
 
     return (
-        containerHeight > viewportHeight ? (
-            <i 
-                className="bi bi-arrow-down-circle-fill scroll-to-bottom" 
-                onClick={() => scrollToPosition(botonId, botonPx)}
-            ></i>
-        ) : null
+        <i
+            style={location === "/" && primerToque ? { color: '#a57ee1' } : null}
+            className={`bi bi-arrow-down-circle-fill scroll-to-bottom ${visible ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300 fixed bottom-5 right-5 w-12 h-12 flex items-center justify-center`}
+            onClick={() => scrollToPosition(botonId, botonPx)}
+        ></i>
+
     );
-    
 }
 
-export default BotonScroll
+export default BotonScroll;

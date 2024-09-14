@@ -101,7 +101,7 @@ const Informe = () => {
                     ))}
                 </tbody>
             </table>
-            <BotonScroll botonId={`idInformeDia-${dia}`} botonPx="45" />
+            <BotonScroll botonId={`idInformeDia-${dia}`} botonPx="60" />
         </>
     );
 };

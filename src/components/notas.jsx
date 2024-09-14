@@ -3,7 +3,7 @@ import { DataContext } from '../context/dateContext';
 import BotonScroll from './botonScroll';
 
 const Notas = ({ titulo, texto, clases, esMensual }) => {
-    const { mes, año} = useContext(DataContext);
+    const { mes, año } = useContext(DataContext);
     const [content, setContent] = useState('');
     const [initialContent, setInitialContent] = useState('');  // Estado para el contenido inicial
     const [fecha, setFecha] = useState('');
@@ -16,7 +16,7 @@ const Notas = ({ titulo, texto, clases, esMensual }) => {
         try {
             JSON.parse(str);
         } catch (e) {
-            
+
             return false;
         }
         return true;
@@ -146,7 +146,7 @@ const Notas = ({ titulo, texto, clases, esMensual }) => {
                     {guardado ? `Guardado el: ${fecha}` : "Guardando..."}
                 </p>
             )}
-          <BotonScroll />
+            <BotonScroll />
 
         </div>
     );
