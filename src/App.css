@@ -206,14 +206,14 @@ body {
     background-color: #ffe6e6;
     /* Fondo más claro para un aspecto más suave */
     border: 1px solid #ff9999;
-    padding: 10px 20px;
+    padding: 5px 10px;
     border-radius: 25px;
     /* Redondear las esquinas de forma más natural */
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     /* Añadir una sombra sutil */
     transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
     /* Transición suave */
-    width: 220px;
+    width: 200px;
 }
 
 .recuadro-input:hover {
