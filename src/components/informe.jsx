@@ -1,11 +1,12 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { DataContext } from "../context/dateContext";
+import BotonScroll from "./botonScroll";
 
 const Informe = () => {
     const { fechaActual, meses, dia, mes, año, retrocederMes, avanzarMes, retrocederAño, avanzarAño, scrollToPosition } = useContext(DataContext);
 
     const isInitialized = useRef(false);
-    
+
     // Estado para almacenar los datos de los inputs
     const [datos, setDatos] = useState(reiniciarValores());
 
@@ -57,10 +58,10 @@ const Informe = () => {
         const clave = `Informe-${mes + 1}-${año}`; // La clave en localStorage
 
         if (isInitialized.current) {
-            
+
             localStorage.setItem(clave, JSON.stringify(datos));
         } else {
-           
+
             isInitialized.current = true;
         }
     };
@@ -100,6 +101,7 @@ const Informe = () => {
                     ))}
                 </tbody>
             </table>
+            <BotonScroll botonId={`idInformeDia-${dia}`} botonPx="45" />
         </>
     );
 };

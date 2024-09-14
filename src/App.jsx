@@ -31,8 +31,6 @@ function App() {
               <Route path="/notas" element={<Notas titulo="Notas" texto="Escribe tus notas aquí..." clases="textarea-notas" esMensual={false} />} />
             </Routes>
           </div>
-          <BotonScroll botonId={`idInformeDia-${dia}`} botonPx="45" />
-
           <NavBar />
         </DataProvider>
       </FireProvider>

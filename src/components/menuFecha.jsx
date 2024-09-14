@@ -1,6 +1,7 @@
 import { useContext } from "react"
 import { DataContext } from "../context/dateContext"
 import { useLocation } from "react-router-dom";
+import BotonScroll from "./botonScroll";
 
 const MenuFecha = () => {
     const { fechaActual, meses, dia, mes, año, retrocederMes, avanzarMes } = useContext(DataContext)
@@ -21,6 +22,8 @@ const MenuFecha = () => {
                 <button onClick={avanzarMes} disabled={location.pathname === "/notas" || location.pathname === "/fechas" || (mes == date.getMonth() && año == date.getFullYear())}>{mesSiguiente}</button>
             </div>
             <i className="bi bi-three-dots-vertical"></i>
+          <BotonScroll />
+
         </div>
     )
 }

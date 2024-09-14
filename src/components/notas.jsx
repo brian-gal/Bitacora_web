@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useContext } from 'react';
 import { DataContext } from '../context/dateContext';
+import BotonScroll from './botonScroll';
 
 const Notas = ({ titulo, texto, clases, esMensual }) => {
     const { mes, año} = useContext(DataContext);
@@ -145,6 +146,8 @@ const Notas = ({ titulo, texto, clases, esMensual }) => {
                     {guardado ? `Guardado el: ${fecha}` : "Guardando..."}
                 </p>
             )}
+          <BotonScroll />
+
         </div>
     );
 };

@@ -6,17 +6,16 @@ const BotonScroll = ({botonId, botonPx}) => {
     const [containerHeight, setContainerHeight] = useState("");
     const [viewportHeight, setViewportHeight] = useState("");
 
+
     useEffect(() => {
-        const contenedorTotal = document.getElementById('contenedorTotal');
+    const contenedorTotal = document.getElementById('contenedorTotal');
 
         if (contenedorTotal) {
             setContainerHeight(contenedorTotal.offsetHeight);
-            setViewportHeight(window.innerHeight);
+            setViewportHeight(window.innerHeight - 100);
         }
-        console.log(containerHeight);
-        console.log(viewportHeight);
-
-        
+        console.log(contenedorTotal);
+         
     }, [location]);
 
     const scrollToPosition = (elementId = null, marginTop = 0) => {
