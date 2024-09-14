@@ -1,22 +1,50 @@
-import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useContext, useEffect, useState } from "react";
+import { DataContext } from "../context/dateContext";
 
-const BotonScroll = ({ botonId, botonPx }) => {
+const BotonScroll = () => {
+    const { dia, currentLocation } = useContext(DataContext);
     const [visible, setVisible] = useState(false);
     const [primerToque, setPrimerToque] = useState(true);
-    const location = useLocation().pathname;
 
+
+    //carga la flecha al iniciar el componente
     useEffect(() => {
-        setVisible(true);
-    }, []);
+
+        const handleScroll = () => {
+
+            const atBottom = document.body.scrollHeight > window.innerHeight + 100;
+
+            if (atBottom) {
+                // Ocultar el botón si estamos en la parte superior o al final de la página
+                setVisible(true);
+            } else {
+                // Mostrar el botón si el usuario está en medio de la página
+                setVisible(false);
+            }
+
+        };
+
+        if (currentLocation == "/notas") {
+            setTimeout(() => {
+                handleScroll()
+            }, 100)
+        } else {
+            handleScroll()
+        }
+
+    }, [currentLocation]);
+
 
     useEffect(() => {
         const handleScroll = () => {
-            // Mostrar el botón si el usuario no está al final de la página
-            if (window.scrollY < document.body.scrollHeight - window.innerHeight + 140) {
-                setVisible(true);
-            } else {
+            const atBottom = window.scrollY >= document.body.scrollHeight - window.innerHeight + 100;
+
+            if (atBottom) {
+                // Ocultar el botón si estamos en la parte superior o al final de la página
                 setVisible(false);
+            } else {
+                // Mostrar el botón si el usuario está en medio de la página
+                setVisible(true);
             }
         };
 
@@ -24,10 +52,11 @@ const BotonScroll = ({ botonId, botonPx }) => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    const scrollToPosition = (elementId = null, marginTop = 0) => {
 
-        if (elementId && primerToque) {
-            const element = document.getElementById(elementId);
+    const scrollToPosition = () => {
+
+        if (currentLocation === "/" && primerToque) {
+            const element = document.getElementById(`idInformeDia-${dia}`);
             if (element) {
                 // Desplazar el elemento específico
                 element.scrollIntoView({
@@ -37,7 +66,7 @@ const BotonScroll = ({ botonId, botonPx }) => {
 
                 const elementPosition = element.getBoundingClientRect().top + window.scrollY;
                 window.scrollTo({
-                    top: elementPosition - marginTop,
+                    top: elementPosition - "60",
                     behavior: 'smooth'
                 });
                 setPrimerToque(false)
@@ -51,13 +80,12 @@ const BotonScroll = ({ botonId, botonPx }) => {
             setPrimerToque(true)
         }
     };
-    console.log(location);
 
     return (
         <i
-            style={location === "/" && primerToque ? { color: '#a57ee1' } : null}
-            className={`bi bi-arrow-down-circle-fill scroll-to-bottom ${visible ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300 fixed bottom-5 right-5 w-12 h-12 flex items-center justify-center`}
-            onClick={() => scrollToPosition(botonId, botonPx)}
+            style={currentLocation === "/" && primerToque ? { color: '#a57ee1' } : null}
+            className={`bi bi-caret-down-fill scroll-to-bottom ${visible ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300 fixed bottom-5 right-5 w-12 h-12 flex items-center justify-center`}
+            onClick={() => scrollToPosition()}
         ></i>
 
     );

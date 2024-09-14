@@ -30,6 +30,7 @@ function App() {
               <Route path="/fechas" element={<FechasEspeciales />} />
               <Route path="/notas" element={<Notas titulo="Notas" texto="Escribe tus notas aquí..." clases="textarea-notas" esMensual={false} />} />
             </Routes>
+            <BotonScroll />
           </div>
           <NavBar />
         </DataProvider>

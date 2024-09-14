@@ -1,9 +1,8 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { DataContext } from "../context/dateContext";
-import BotonScroll from "./botonScroll";
 
 const Informe = () => {
-    const { fechaActual, meses, dia, mes, año, retrocederMes, avanzarMes, retrocederAño, avanzarAño, scrollToPosition } = useContext(DataContext);
+    const { dia, mes, año } = useContext(DataContext);
 
     const isInitialized = useRef(false);
 
@@ -17,6 +16,7 @@ const Informe = () => {
         try {
             JSON.parse(str);
         } catch (e) {
+            console.error(e)
             return false;
         }
         return true;
@@ -26,9 +26,11 @@ const Informe = () => {
         return Array.from({ length: new Date(año, mes + 1, 0).getDate() }, (_, i) => ({
             dia: i + 1,
             horas: "",
-            estudio: ""
+            revisitas: "",
+            publicaciones: ""
         }));
     }
+
 
     // Obtener los datos desde el storage
     useEffect(() => {
@@ -83,12 +85,14 @@ const Informe = () => {
 
     return (
         <>
+            <h1 className='titulo'>Informe</h1>
             <table className="activity-table">
                 <thead>
                     <tr>
                         <th>Día</th>
                         <th>Horas</th>
-                        <th>Estudios</th>
+                        <th>Revisitas</th>
+                        <th>Publicaciones y videos</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -96,12 +100,12 @@ const Informe = () => {
                         <tr key={day}>
                             <td id={day === dia ? `idInformeDia-${day}` : undefined} style={{ backgroundColor: day === dia ? 'lightblue' : 'transparent' }}>{day}</td>
                             <td><input type="number" placeholder="Horas" value={datos.find(d => d.dia === day)?.horas || ""} onChange={handleInputChange(day, 'horas')} /></td>
-                            <td><input type="text" placeholder="Estudios" value={datos.find(d => d.dia === day)?.estudio || ""} onChange={handleInputChange(day, 'estudio')} /></td>
+                            <td><input type="text" placeholder="Revisitas" value={datos.find(d => d.dia === day)?.revisitas || ""} onChange={handleInputChange(day, 'revisitas')} /></td>
+                            <td><input type="number" placeholder="Publicaciones" value={datos.find(d => d.dia === day)?.publicaciones || ""} onChange={handleInputChange(day, 'publicaciones')} /></td>
                         </tr>
                     ))}
                 </tbody>
             </table>
-            <BotonScroll botonId={`idInformeDia-${dia}`} botonPx="60" />
         </>
     );
 };

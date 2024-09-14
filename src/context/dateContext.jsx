@@ -1,4 +1,5 @@
-import { createContext, useState } from "react";
+import { createContext, useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 
 // Crear el contexto
 export const DataContext = createContext({});
@@ -9,13 +10,20 @@ const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "
 // Componente proveedor del contexto
 export const DataProvider = ({ children }) => {
     const date = new Date();
-    
+
 
     // Estado para manejar el día, mes y año
     const dia = date.getDate();
 
     const [mes, setMes] = useState(date.getMonth());
     const [año, setAño] = useState(date.getFullYear());
+    const location = useLocation();
+    const [currentLocation, setCurrentLocation] = useState(location.pathname);
+
+    // Actualizar el estado cada vez que cambie la ubicación
+    useEffect(() => {
+        setCurrentLocation(location.pathname);
+    }, [location]);
 
     // Función para retroceder en el mes
     const retrocederMes = () => {
@@ -56,14 +64,6 @@ export const DataProvider = ({ children }) => {
         setAño(date.getFullYear())
     }
 
- 
-    
-
-
-
-
-
-
     return (
         <DataContext.Provider
             value={{
@@ -76,7 +76,7 @@ export const DataProvider = ({ children }) => {
                 avanzarMes,
                 retrocederAño,
                 avanzarAño,
-                
+                currentLocation
             }}
         >
             {children}
