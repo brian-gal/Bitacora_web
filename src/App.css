@@ -69,7 +69,7 @@ body {
     display: flex;
     align-items: center;
     background-color: #f0f0f0;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
     padding: 4px;
     z-index: 1000;
 }
@@ -88,9 +88,8 @@ body {
 }
 
 .menuFechaMes h2,
-.menuFechaMes h3,
-.menuFechaAño h1 {
-    font-size: 13px;
+.menuFechaMes h3 {
+    font-size: 15px;
 }
 
 .menuFechaMes div {
@@ -197,8 +196,7 @@ body {
     flex-wrap: wrap;
     gap: 20px;
     justify-content: center;
-    padding: 20px;
-    /* Añadir un poco de padding al contenedor */
+
 }
 
 .recuadro-input {
@@ -208,13 +206,14 @@ body {
     background-color: #ffe6e6;
     /* Fondo más claro para un aspecto más suave */
     border: 1px solid #ff9999;
-    padding: 15px 25px;
+    padding: 10px 20px;
     border-radius: 25px;
     /* Redondear las esquinas de forma más natural */
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     /* Añadir una sombra sutil */
     transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
     /* Transición suave */
+    width: 220px;
 }
 
 .recuadro-input:hover {
