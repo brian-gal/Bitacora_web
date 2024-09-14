@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useContext } from 'react';
 import { DataContext } from '../context/dateContext';
 
 const Notas = ({ titulo, texto, clases, esMensual }) => {
-    const { mes, año, scrollToPosition } = useContext(DataContext);
+    const { mes, año} = useContext(DataContext);
     const [content, setContent] = useState('');
     const [initialContent, setInitialContent] = useState('');  // Estado para el contenido inicial
     const [fecha, setFecha] = useState('');
@@ -15,7 +15,7 @@ const Notas = ({ titulo, texto, clases, esMensual }) => {
         try {
             JSON.parse(str);
         } catch (e) {
-            console.log(e);
+            
             return false;
         }
         return true;
@@ -145,7 +145,6 @@ const Notas = ({ titulo, texto, clases, esMensual }) => {
                     {guardado ? `Guardado el: ${fecha}` : "Guardando..."}
                 </p>
             )}
-            <i className="bi bi-arrow-down-circle-fill scroll-to-bottom" onClick={() => scrollToPosition()}></i>
         </div>
     );
 };

@@ -9,6 +9,7 @@ const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "
 // Componente proveedor del contexto
 export const DataProvider = ({ children }) => {
     const date = new Date();
+    
 
     // Estado para manejar el día, mes y año
     const dia = date.getDate();
@@ -55,36 +56,13 @@ export const DataProvider = ({ children }) => {
         setAño(date.getFullYear())
     }
 
-    const scrollToPosition = (elementId = null) => {
-        if (elementId) {
-            const element = document.getElementById(elementId);
-            if (element) {
-                // Desplazar el elemento para que esté en vista
-                element.scrollIntoView({
-                    behavior: 'smooth', // Desplazamiento suave
-                    block: 'start'      // Alinear el elemento con la parte superior de la ventana
-                });
+ 
     
-                // Ajustar la posición para asegurar que el elemento quede alineado con la parte superior
-                // A veces scrollIntoView no alinea exactamente, así que ajustamos la posición manualmente
-                const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
-                window.scrollTo({
-                    top: elementPosition,
-                    behavior: 'smooth'
-                });
-            }
-        } else {
-            // Si no se pasa un ID, desplazarse al final de la página
-            window.scrollTo({
-                top: document.documentElement.scrollHeight,  // Desplazar al final
-                behavior: 'smooth'
-            });
-        }
-    };
-    
-    
-    
-    
+
+
+
+
+
 
     return (
         <DataContext.Provider
@@ -98,7 +76,7 @@ export const DataProvider = ({ children }) => {
                 avanzarMes,
                 retrocederAño,
                 avanzarAño,
-                scrollToPosition
+                
             }}
         >
             {children}

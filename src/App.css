@@ -194,7 +194,7 @@ body {
 .input-grid {
     display: flex;
     flex-wrap: wrap;
-    gap: 20px;
+    gap: 10px;
     justify-content: center;
 
 }
@@ -213,7 +213,7 @@ body {
     /* Añadir una sombra sutil */
     transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
     /* Transición suave */
-    width: 200px;
+    width: 150px;
 }
 
 .recuadro-input:hover {
@@ -225,10 +225,11 @@ body {
 
 .input-grid div p {
     font-family: 'Arial', sans-serif;
-    /* Cambiar la fuente para que sea más legible */
+    height: 100%;
     font-size: 15px;
     color: #d9534f;
-    /* Color más fuerte y uniforme */
+    display: flex;
+    align-items: center;
     margin-bottom: 8px;
     text-align: center;
 }

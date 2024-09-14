@@ -20,7 +20,7 @@ export const guardarNotas = async () => {
             texto: mensaje
         });
 
-        console.log('Nota de prueba guardada correctamente');
+        
     } catch (error) {
         console.error('Error al guardar la nota de prueba:', error);
     }

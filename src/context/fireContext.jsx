@@ -10,7 +10,7 @@ const userEmail = localStorage.getItem('sesion_iniciada')
 
 async function revisaStorage(clave) {
     const notasVacio = localStorage.getItem(clave) ? true : false;
-    console.log(notasVacio);
+    
 
     if (notasVacio) {
         try {
@@ -18,15 +18,12 @@ async function revisaStorage(clave) {
             const notasTextoRef = doc(db, 'users', userEmail, 'notas', 'notas');
             const response = await getDoc(notasTextoRef);
             const data = response.data();
-            console.log('base de datos:', data);
-            console.log(data.notas);
+            
             localStorage.setItem('notas', data.notas);
 
         } catch (error) {
             console.error('Error al obtener productos:', error);
-        } finally {
-            console.log('Operación finalizada');
-        }
+        } 
     }
 
 }

@@ -6,7 +6,7 @@ const FechasEspeciales = () => {
 
     // Cargar datos del localStorage
     const loadFromLocalStorage = () => {
-        const savedData = localStorage.getItem('fechasEspeciales');
+        const savedData = localStorage.getItem('FechasEspeciales');
 
         return savedData ? JSON.parse(savedData) : [
             { label: 'Asamblea de Circuito', date: '', fecha: '' },
@@ -23,7 +23,7 @@ const FechasEspeciales = () => {
     // Guardar datos en localStorage cada vez que el estado cambia
     useEffect(() => {
         if (isInitialized.current) {
-            localStorage.setItem('fechasEspeciales', JSON.stringify(calendario));
+            localStorage.setItem('FechasEspeciales', JSON.stringify(calendario));
         } else {
             isInitialized.current = true;
         }

@@ -9,9 +9,13 @@ import { FireProvider } from './context/fireContext';
 import Enseñanzas from './components/enseñanzas';
 import FechasEspeciales from './components/fechasEspeciales';
 import MenuFecha from './components/menuFecha';
+import BotonScroll from './components/botonScroll';
 
 function App() {
+  const date = new Date();
 
+  // Estado para manejar el día, mes y año
+  const dia = date.getDate();
 
   return (
     <BrowserRouter>
@@ -19,7 +23,7 @@ function App() {
         <DataProvider>
           <InicioSesion />
           <MenuFecha />
-          <div className='contenedor'>
+          <div className='contenedor' id='contenedorTotal'>
             <Routes>
               <Route path="/" element={<Informe titulo="Informe" />} />
               <Route path="/enseñanzas" element={<Enseñanzas />} />
@@ -27,6 +31,8 @@ function App() {
               <Route path="/notas" element={<Notas titulo="Notas" texto="Escribe tus notas aquí..." clases="textarea-notas" esMensual={false} />} />
             </Routes>
           </div>
+          <BotonScroll botonId={`idInformeDia-${dia}`} botonPx="45" />
+
           <NavBar />
         </DataProvider>
       </FireProvider>

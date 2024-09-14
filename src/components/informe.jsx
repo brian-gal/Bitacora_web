@@ -1,17 +1,46 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { DataContext } from "../context/dateContext";
 
 const Informe = () => {
     const { fechaActual, meses, dia, mes, año, retrocederMes, avanzarMes, retrocederAño, avanzarAño, scrollToPosition } = useContext(DataContext);
 
+    const isInitialized = useRef(false);
+    
     // Estado para almacenar los datos de los inputs
-    const [datos, setDatos] = useState(
-        Array.from({ length: new Date(año, mes + 1, 0).getDate() }, (_, i) => ({
+    const [datos, setDatos] = useState(reiniciarValores());
+
+    // Estado para verificar si los datos han sido modificados
+    const [modificado, setModificado] = useState(true);
+
+    const isJSON = (str) => {
+        try {
+            JSON.parse(str);
+        } catch (e) {
+            return false;
+        }
+        return true;
+    };
+
+    function reiniciarValores() {
+        return Array.from({ length: new Date(año, mes + 1, 0).getDate() }, (_, i) => ({
             dia: i + 1,
-            horas: 0,
+            horas: "",
             estudio: ""
-        }))
-    );
+        }));
+    }
+
+    // Obtener los datos desde el storage
+    useEffect(() => {
+        const storedData = localStorage.getItem(`Informe-${mes + 1}-${año}`);
+
+        if (storedData && isJSON(storedData)) {
+            const parsedData = JSON.parse(storedData);
+            setDatos(parsedData);
+        } else {
+            // Si no hay datos en el localStorage, reiniciar el estado con días vacíos
+            setDatos(reiniciarValores());
+        }
+    }, [mes, año]);
 
     // Función para actualizar los datos en el estado
     const handleChange = (day, field, value) => {
@@ -20,12 +49,20 @@ const Informe = () => {
                 dato.dia === day ? { ...dato, [field]: value } : dato
             )
         );
+        setModificado(true);  // Marca como modificado
     };
 
     // Función para guardar los datos en localStorage
     const saveToLocalStorage = () => {
-        const clave = `informe-${mes + 1}-${año}`; // La clave en localStorage
-        localStorage.setItem(clave, JSON.stringify(datos));
+        const clave = `Informe-${mes + 1}-${año}`; // La clave en localStorage
+
+        if (isInitialized.current) {
+            
+            localStorage.setItem(clave, JSON.stringify(datos));
+        } else {
+           
+            isInitialized.current = true;
+        }
     };
 
     // Función para manejar el evento de cambio en los inputs
@@ -33,9 +70,13 @@ const Informe = () => {
         handleChange(day, field, event.target.value);
     };
 
+    // useEffect para guardar los datos en localStorage solo si han sido modificados
     useEffect(() => {
-        saveToLocalStorage();
-    }, [datos, mes, año]);
+        if (modificado) {
+            saveToLocalStorage();
+            setModificado(false);  // Reinicia la bandera después de guardar
+        }
+    }, [datos, modificado]);
 
     const daysInMonth = new Date(año, mes + 1, 0).getDate();
 
@@ -59,7 +100,6 @@ const Informe = () => {
                     ))}
                 </tbody>
             </table>
-            <i className="bi bi-arrow-down-circle-fill scroll-to-bottom" onClick={() => scrollToPosition(`idInformeDia-${dia}`)}></i>
         </>
     );
 };
