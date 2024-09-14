@@ -1,111 +1,101 @@
-import { getDocs, collection, query, where, setDoc, doc } from "firebase/firestore";
-import { db } from "../services/firebaseConfig.js";
-import { useContext, useState } from "react"; // Necesario para manejar el estado del formulario
-import { useEffect } from "react";
-import { FireContext } from "../context/fireContext.jsx";
+import { useState, useEffect } from "react";
 
-
+import { getAuth, createUserWithEmailAndPassword, sendEmailVerification, signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
 
 const InicioSesion = () => {
     const [registerEmail, setRegisterEmail] = useState("");
+    const [registerEmailConfirm, setRegisterEmailConfirm] = useState("");
     const [registerPassword, setRegisterPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
-    const [loginEmail, setLoginEmail] = useState(""); // Para el inicio de sesión
-    const [loginPassword, setLoginPassword] = useState(""); // Para el inicio de sesión
-    const { sesionIniciada } = useContext(FireContext);
+    const [loginEmail, setLoginEmail] = useState("");
+    const [loginPassword, setLoginPassword] = useState("");
 
     useEffect(() => {
+        const auth = getAuth();
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Usuario está autenticado
+                console.log("Usuario autenticado:", user);
+                // Redirige al usuario a la página principal o a donde desees
 
-        if (!sesionIniciada) {
-            const loginModal = new window.bootstrap.Modal(document.getElementById("loginModal"));
-            loginModal.show();
+            } else {
+                // Usuario no está autenticado
+                console.log("Usuario no autenticado");
+                const loginModal = new window.bootstrap.Modal(document.getElementById("loginModal"));
+                loginModal.show();
+            }
+        });
+    }, []);
+
+    //Crear cuenta
+    const handleCreateAccount = async () => {
+        if (registerEmail !== registerEmailConfirm) {
+            alert("Los correos electrónicos no coinciden");
+            return;
         }
 
-    }, [sesionIniciada]);
-
-    // Función para manejar la creación de cuenta
-    const handleCreateAccount = async () => {
         if (registerPassword !== confirmPassword) {
             alert("Las contraseñas no coinciden");
             return;
         }
 
+        // Verificar que la contraseña tenga al menos 6 caracteres
+        if (registerPassword.length < 6) {
+            alert("La contraseña debe tener al menos 6 caracteres");
+            return;
+        }
+
+        const email = registerEmail;
+        const password = registerPassword;
+
+        const auth = getAuth();
         try {
-            // Verificar si el correo ya está registrado
-            const q = query(collection(db, "users"), where("email", "==", registerEmail));
-            const querySnapshot = await getDocs(q);
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+            // Enviar correo de verificación
+            await sendEmailVerification(user);
 
-            if (!querySnapshot.empty) {
-                // Si el correo ya existe, mostramos un mensaje
-                alert("El correo ya está registrado. Por favor, utiliza otro.");
-                return;
-            }
-
-            // Si el correo no existe, procede a crear la cuenta
-            await setDoc(doc(db, "users", registerEmail), {
-                email: registerEmail,
-                password: registerPassword
-            });
-            alert("Cuenta creada exitosamente, inicie sesion");
-
-            // Simular el clic en el botón "Iniciar Sesión" del modal de registro
-            const loginModalButton = document.querySelector("#registerModal .btn-secondary");
-            if (loginModalButton) {
-                loginModalButton.click();
-            }
-
+            // Mostrar mensaje al usuario
+            alert("Cuenta creada exitosamente. Verifica tu correo para confirmar la cuenta.");
         } catch (error) {
-            console.error("Error al crear la cuenta: ", error);
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            // Maneja los errores de autenticación aquí
+            console.error("Error al crear la cuenta:", errorCode, errorMessage);
+            alert("Error al crear la cuenta: " + errorMessage);
         }
     };
 
-    // Función para manejar el inicio de sesión
+    //iniciar sesion
     const handleLogin = async () => {
-        try {
-            // Consultar Firestore para buscar el usuario con el correo ingresado
-            const q = query(collection(db, "users"), where("email", "==", loginEmail));
-            const querySnapshot = await getDocs(q);
+        const auth = getAuth();
+        const email = loginEmail;
+        const password = loginPassword;
 
-            if (querySnapshot.empty) {
-                alert("Usuario no encontrado");
+        try {
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+
+            if (!user.emailVerified) {
+                alert("Por favor, verifica tu correo electrónico antes de iniciar sesión.");
+                // Opcional: Cerrar sesión o redirigir al usuario a una página de verificación
+                await auth.signOut();
                 return;
             }
 
-            // Verificar si la contraseña ingresada coincide
-            let loginSuccessful = false;
-            querySnapshot.forEach((doc) => {
-                const userData = doc.data();
-                if (userData.password === loginPassword) {
-                    alert("Inicio de sesión exitoso");
-
-                    // Guardar la sesión iniciada en localStorage
-                    localStorage.setItem("sesion_iniciada", loginEmail);
-
-                    // Indicar que el inicio de sesión fue exitoso
-                    loginSuccessful = true;
-                } else {
-                    alert("Contraseña incorrecta");
-                }
-            });
-
-            // Cerrar el modal solo si el inicio de sesión fue exitoso
-            if (loginSuccessful) {
-                const loginModalElement = document.getElementById("loginModal");
-                const loginModal = window.bootstrap.Modal.getInstance(loginModalElement);
-                if (loginModal) {
-                    loginModal.hide();
-                }
-            }
+            console.log("Sesión iniciada:", user);
+            // Opcional: Redirigir al usuario o mostrar un mensaje de éxito
         } catch (error) {
-            console.error("Error al iniciar sesión: ", error);
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            console.error("Error al iniciar sesión:", errorCode, errorMessage);
+            alert("Error al iniciar sesión: " + errorMessage);
         }
     };
-
 
 
     return (
         <div>
-
             {/* Login Modal */}
             <div
                 className="modal fade"
@@ -195,6 +185,16 @@ const InicioSesion = () => {
                                     />
                                 </div>
                                 <div className="mb-3">
+                                    <label htmlFor="registerEmailConfirmInput" className="form-label">Confirmar Email</label>
+                                    <input
+                                        type="email"
+                                        className="form-control"
+                                        id="registerEmailConfirmInput"
+                                        value={registerEmailConfirm}
+                                        onChange={(e) => setRegisterEmailConfirm(e.target.value)} // Captura la confirmación del correo
+                                    />
+                                </div>
+                                <div className="mb-3">
                                     <label htmlFor="registerPasswordInput" className="form-label">Password</label>
                                     <input
                                         type="password"
@@ -205,7 +205,7 @@ const InicioSesion = () => {
                                     />
                                 </div>
                                 <div className="mb-3">
-                                    <label htmlFor="confirmPasswordInput" className="form-label">Confirm Password</label>
+                                    <label htmlFor="confirmPasswordInput" className="form-label">Confirmar Password</label>
                                     <input
                                         type="password"
                                         className="form-control"
@@ -220,15 +220,14 @@ const InicioSesion = () => {
                             <button
                                 type="button"
                                 className="btn btn-secondary"
-                                data-bs-toggle="modal"
-                                data-bs-target="#loginModal"
+                                data-bs-dismiss="modal"
                             >
-                                Iniciar Sesion
+                                Cerrar
                             </button>
                             <button
                                 type="button"
                                 className="btn btn-primary"
-                                onClick={handleCreateAccount} // Llama a la función al hacer clic
+                                onClick={handleCreateAccount} // Llama a la función para crear la cuenta
                             >
                                 Crear Cuenta
                             </button>

@@ -12,10 +12,6 @@ import MenuFecha from './components/menuFecha';
 import BotonScroll from './components/botonScroll';
 
 function App() {
-  const date = new Date();
-
-  // Estado para manejar el día, mes y año
-  const dia = date.getDate();
 
   return (
     <BrowserRouter>
