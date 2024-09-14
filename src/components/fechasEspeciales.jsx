@@ -71,8 +71,9 @@ const FechasEspeciales = () => {
             <h1 className='titulo'>Fechas especiales</h1>
             <div className="input-grid">
                 {calendario.map((item, index) => (
-                    <div key={index}>
+                    <div key={index} className='recuadro-input'>
                         <p>{item.label}</p>
+
                         <input
                             type="date"
                             value={item.date}
@@ -81,8 +82,9 @@ const FechasEspeciales = () => {
                         <i
                             className="bi bi-trash"
                             onClick={() => handleDeleteDate(index)}
-                            style={{ cursor: 'pointer', color: 'red', marginLeft: '10px' }}
+                            style={{ cursor: 'pointer', color: 'red' }}
                         />
+
                     </div>
                 ))}
             </div>

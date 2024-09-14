@@ -5,7 +5,7 @@
 }
 
 body {
-    font-family: 'Cursive', sans-serif;
+    font-family: 'Arial', sans-serif;
     background-color: #f8eaea;
 }
 
@@ -197,37 +197,99 @@ body {
     flex-wrap: wrap;
     gap: 20px;
     justify-content: center;
+    padding: 20px;
+    /* Añadir un poco de padding al contenedor */
 }
 
-.input-grid div {
+.recuadro-input {
     display: flex;
     flex-direction: column;
     align-items: center;
+    background-color: #ffe6e6;
+    /* Fondo más claro para un aspecto más suave */
+    border: 1px solid #ff9999;
+    padding: 15px 25px;
+    border-radius: 25px;
+    /* Redondear las esquinas de forma más natural */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    /* Añadir una sombra sutil */
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    /* Transición suave */
+}
+
+.recuadro-input:hover {
+    transform: scale(1.05);
+    /* Un ligero zoom al hacer hover */
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+    /* Aumentar la sombra */
 }
 
 .input-grid div p {
-    font-family: 'Cursive', sans-serif;
-    font-size: 14px;
-    color: #9b4d4d;
-    margin-bottom: 0;
+    font-family: 'Arial', sans-serif;
+    /* Cambiar la fuente para que sea más legible */
+    font-size: 15px;
+    color: #d9534f;
+    /* Color más fuerte y uniforme */
+    margin-bottom: 8px;
+    text-align: center;
 }
 
 .input-grid div input[type="date"] {
-    width: 100%;
-    max-width: 130px;
+    width: 140px;
     text-align: center;
     padding: 10px;
-    border: 1px solid #f8eaea;
-    border-radius: 20px;
-    background-color: #ffdcdc;
-    text-align: center;
-    font-size: 13px;
-    font-family: 'Arial', sans-serif;
+    border: 1px solid #f5cccc;
+    border-radius: 15px;
+    /* Esquinas más sutilmente redondeadas */
+    background-color: #fff7f7;
+    font-size: 14px;
+    color: #333;
+    /* Color de texto más oscuro para mejor contraste */
+    transition: border-color 0.3s ease;
+    /* Transición suave al enfocar */
+}
+
+.input-grid div input[type="date"]:focus {
+    outline: none;
+    border-color: #ff9999;
+    /* Resaltar borde al enfocar */
+}
+
+.bi-trash {
+    font-size: 18px;
+    /* Aumentar un poco el tamaño del ícono */
+    margin-top: 10px;
+    color: #d9534f;
+    transition: color 0.3s ease, transform 0.3s ease;
+    /* Transiciones suaves para el ícono */
+}
+
+.bi-trash:hover {
+    color: #c9302c;
+    /* Cambiar color al hacer hover */
+    transform: scale(1.1);
+    /* Ligeramente agrandar el ícono al pasar el mouse */
+    cursor: pointer;
 }
 
 .botonFechas {
-    margin-top: 20px;
+    margin-top: 25px;
+    padding: 10px 20px;
+    font-family: 'Arial', sans-serif;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    /* Transición suave al hover */
 }
+
+.botonFechas:hover {
+    background-color: #0056b3;
+    /* Cambiar color al hacer hover */
+}
+
 
 /* .....................................Informe.......................... */
 .activity-table {
