@@ -10,19 +10,15 @@ const MenuFecha = () => {
 
     return (
         <div className="menuFecha">
-            <div className="menuFechaAño">
-                <i className="bi bi-arrow-left" onClick={retrocederAño}></i>
-                <h1>{año}</h1>
-                <i className="bi bi-arrow-right" onClick={avanzarAño}></i>
-            </div>
             <div className="menuFechaMes">
                 <button onClick={retrocederMes}>{mesPrevio}</button>
                 <div onClick={fechaActual}>
-                    <h2>{meses[mes]}</h2>
-                    <h3>{dia}</h3>
+                    <h2>{dia} {meses[mes]}</h2>
+                    <h3>{año}</h3>
                 </div>
                 <button onClick={avanzarMes}>{mesSiguiente}</button>
             </div>
+            <i className="bi bi-three-dots-vertical"></i>
         </div>
     )
 }

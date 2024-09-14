@@ -1,5 +1,4 @@
 import { useContext, useEffect, useState } from "react";
-import MenuFecha from "./menuFecha";
 import { DataContext } from "../context/dateContext";
 
 const Informe = () => {
@@ -42,7 +41,6 @@ const Informe = () => {
 
     return (
         <>
-            <MenuFecha />
             <table className="activity-table">
                 <thead>
                     <tr>

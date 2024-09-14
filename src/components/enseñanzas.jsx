@@ -1,13 +1,18 @@
-import MenuFecha from "./menuFecha"
+import { useContext } from "react"
 import Notas from "./notas"
+import { DataContext } from "../context/dateContext"
+
 
 const Enseñanzas = () => {
+    const { mes, meses } = useContext(DataContext)
+
+    const esteMes = meses[mes].toLowerCase()
+
     return (
         <>
-            <MenuFecha />
-            <Notas titulo="Broadcasting" texto="Escribe que aprendiste del broadcasting de este mes" clases="textarea-enseñanzas" esMensual={true} />
-            <Notas titulo="Gratitud" texto="Anota las cosas por las cuales agradecer este mes" clases="textarea-enseñanzas" esMensual={true} />
-            <Notas titulo="Oraciones" texto="¿Cuántas oraciones respondió Jehová este mes? Anótalas así no te olvidas ninguna" clases="textarea-enseñanzas" esMensual={true} />
+            <Notas titulo="Broadcasting" texto={`Escribe que aprendiste del broadcasting de ${esteMes}`} clases="textarea-enseñanzas" esMensual={true} />
+            <Notas titulo="Gratitud" texto={`Anota las cosas por las cuales agradecer en ${esteMes}`} clases="textarea-enseñanzas" esMensual={true} />
+            <Notas titulo="Oraciones" texto={`¿Cuántas oraciones respondió Jehová en ${esteMes}? Anótalas así no te olvidas ninguna`} clases="textarea-enseñanzas" esMensual={true} />
         </>
     )
 }

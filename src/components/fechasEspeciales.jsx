@@ -1,6 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 const FechasEspeciales = () => {
+    const isInitialized = useRef(false);
+
+
     // Cargar datos del localStorage
     const loadFromLocalStorage = () => {
         const savedData = localStorage.getItem('fechasEspeciales');
@@ -19,8 +22,14 @@ const FechasEspeciales = () => {
 
     // Guardar datos en localStorage cada vez que el estado cambia
     useEffect(() => {
-        localStorage.setItem('fechasEspeciales', JSON.stringify(calendario));
+        if (isInitialized.current) {
+            localStorage.setItem('fechasEspeciales', JSON.stringify(calendario));
+        } else {
+            isInitialized.current = true;
+        }
     }, [calendario]);
+
+
 
     // Maneja el cambio en los inputs de fecha
     const handleDateChange = (index, newDate) => {
@@ -63,7 +72,7 @@ const FechasEspeciales = () => {
             <div className="input-grid">
                 {calendario.map((item, index) => (
                     <div key={index}>
-                        <label>{item.label}</label>
+                        <p>{item.label}</p>
                         <input
                             type="date"
                             value={item.date}
