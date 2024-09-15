@@ -1,5 +1,6 @@
 import { useContext } from "react"
 import { DataContext } from "../context/dateContext"
+import { NavLink } from 'react-router-dom';
 
 
 const MenuFecha = () => {
@@ -19,7 +20,7 @@ const MenuFecha = () => {
                 </div>
                 <button onClick={avanzarMes} disabled={currentLocation === "/notas" || currentLocation === "/fechas" || (mes == date.getMonth() && año == date.getFullYear())}>{mesSiguiente}</button>
             </div>
-            <i className="bi bi-three-dots-vertical"></i>
+            <NavLink className="menuFecha-icon" to="/config"><i className="bi bi-list"></i></NavLink>
         </div>
     )
 }

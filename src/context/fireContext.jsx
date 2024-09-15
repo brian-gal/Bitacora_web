@@ -1,39 +1,34 @@
-import { createContext, useEffect } from "react";
-import { db } from '../services/firebaseConfig'; // Asegúrate de tener esta configuración
-import { doc, getDoc } from 'firebase/firestore'; // Importa las funciones necesarias
+import { createContext, useEffect, useState } from "react";
+import { auth, db } from '../services/firebaseConfig'; // Asegúrate de tener esta configuración
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 export const FireContext = createContext({});
 
-// Al montar el componente, verifica si la sesión está iniciada
-const sesionIniciada = localStorage.getItem('sesion_iniciada') ? true : false;
-const userEmail = localStorage.getItem('sesion_iniciada')
-
-async function revisaStorage(clave) {
-    const notasVacio = localStorage.getItem(clave) ? true : false;
-    
-
-    if (notasVacio) {
-        try {
-            // Definir la referencia al documento 'notasTexto' dentro de la subcolección 'notas'
-            const notasTextoRef = doc(db, 'users', userEmail, 'notas', 'notas');
-            const response = await getDoc(notasTextoRef);
-            const data = response.data();
-            
-            localStorage.setItem('notas', data.notas);
-
-        } catch (error) {
-            console.error('Error al obtener productos:', error);
-        } 
-    }
-
-}
-
 // Componente proveedor del contexto
 export const FireProvider = ({ children }) => {
+    const [uid, setUid] = useState(null);
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (user) {
+                setUid(user.uid);
+                console.log("Usuario autenticado:", uid);
+
+            } else {
+                localStorage.clear();
+                setUid(null);
+                console.log("Usuario no autenticado");
+                const loginModal = new window.bootstrap.Modal(document.getElementById("loginModal"));
+                loginModal.show();
+            }
+        });
+
+        return () => unsubscribe();
+    }, [uid]);
 
     return (
         <FireContext.Provider
-            value={{ sesionIniciada }}
+            value={{ uid }}
         >
             {children}
         </FireContext.Provider>

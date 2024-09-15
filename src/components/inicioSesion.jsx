@@ -1,5 +1,4 @@
-import { useState, useEffect } from "react";
-
+import { useState } from "react";
 import { getAuth, createUserWithEmailAndPassword, sendEmailVerification, signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
 
 const InicioSesion = () => {
@@ -10,22 +9,7 @@ const InicioSesion = () => {
     const [loginEmail, setLoginEmail] = useState("");
     const [loginPassword, setLoginPassword] = useState("");
 
-    useEffect(() => {
-        const auth = getAuth();
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                // Usuario está autenticado
-                console.log("Usuario autenticado:", user);
-                // Redirige al usuario a la página principal o a donde desees
 
-            } else {
-                // Usuario no está autenticado
-                console.log("Usuario no autenticado");
-                const loginModal = new window.bootstrap.Modal(document.getElementById("loginModal"));
-                loginModal.show();
-            }
-        });
-    }, []);
 
     //Crear cuenta
     const handleCreateAccount = async () => {
@@ -83,8 +67,12 @@ const InicioSesion = () => {
                 return;
             }
 
-            console.log("Sesión iniciada:", user);
-            // Opcional: Redirigir al usuario o mostrar un mensaje de éxito
+            // Cerrar el modal después de iniciar sesión
+            const loginModalElement = document.getElementById("loginModal");
+            const loginModal = window.bootstrap.Modal.getInstance(loginModalElement);
+            if (loginModal) {
+                loginModal.hide();
+            }
         } catch (error) {
             const errorCode = error.code;
             const errorMessage = error.message;
@@ -220,9 +208,10 @@ const InicioSesion = () => {
                             <button
                                 type="button"
                                 className="btn btn-secondary"
-                                data-bs-dismiss="modal"
+                                data-bs-toggle="modal"
+                                data-bs-target="#loginModal" // Redirige al modal de inicio de sesión
                             >
-                                Cerrar
+                                Iniciar sesión
                             </button>
                             <button
                                 type="button"

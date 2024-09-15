@@ -82,8 +82,13 @@ body {
 }
 
 .menuFecha i {
+    font-size: 1.5rem;
+}
+
+.menuFecha-icon {
     position: absolute;
-    right: 0;
+    right: 10px;
+    color: #333;
 }
 
 .menuFechaMes {
@@ -111,10 +116,6 @@ body {
 .menuFecha h3 {
     margin: 0;
     color: #b3545e;
-}
-
-.menuFecha i {
-    font-size: 1.5rem;
 }
 
 .menuFechaMes button {

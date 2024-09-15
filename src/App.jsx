@@ -10,6 +10,7 @@ import Enseñanzas from './components/enseñanzas';
 import FechasEspeciales from './components/fechasEspeciales';
 import MenuFecha from './components/menuFecha';
 import BotonScroll from './components/botonScroll';
+import Config from './components/config';
 
 function App() {
 
@@ -25,6 +26,7 @@ function App() {
               <Route path="/enseñanzas" element={<Enseñanzas />} />
               <Route path="/fechas" element={<FechasEspeciales />} />
               <Route path="/notas" element={<Notas titulo="Notas" texto="Escribe tus notas aquí..." clases="textarea-notas" esMensual={false} />} />
+              <Route path="/config" element={<Config />} />
             </Routes>
             <BotonScroll />
           </div>
