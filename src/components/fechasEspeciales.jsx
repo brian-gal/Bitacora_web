@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { crearDependencia } from './storageDependencies';
 
 const FechasEspeciales = () => {
     const isInitialized = useRef(false);
@@ -22,8 +23,11 @@ const FechasEspeciales = () => {
 
     // Guardar datos en localStorage cada vez que el estado cambia
     useEffect(() => {
+        const currentFecha = new Date().toLocaleString();
         if (isInitialized.current) {
             localStorage.setItem('FechasEspeciales', JSON.stringify(calendario));
+            crearDependencia('FechasEspeciales', currentFecha, true, "probando")
+
         } else {
             isInitialized.current = true;
         }

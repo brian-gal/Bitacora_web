@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useContext } from 'react';
 import { DataContext } from '../context/dateContext';
+import { crearDependencia } from './storageDependencies';
 
 const Notas = ({ titulo, texto, clases, esMensual }) => {
     const { mes, año } = useContext(DataContext);
@@ -119,9 +120,11 @@ const Notas = ({ titulo, texto, clases, esMensual }) => {
 
                 storedArray[mes] = newEntry;
                 localStorage.setItem(`${titulo}-${año}`, JSON.stringify(storedArray));
+                crearDependencia(`${titulo}-${año}`, currentFecha, true, "probando")
             } else {
                 const data = { content, fecha: currentFecha };
                 localStorage.setItem(titulo, JSON.stringify(data));
+                crearDependencia(titulo, currentFecha, true, "probando")
             }
 
             setFecha(currentFecha);
