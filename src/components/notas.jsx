@@ -3,7 +3,7 @@ import { DataContext } from '../context/dateContext';
 import { crearDependencia } from './storageDependencies';
 
 const Notas = ({ titulo, texto, clases, esMensual }) => {
-    const { mes, año } = useContext(DataContext);
+    const { mes, año, currentFecha } = useContext(DataContext);
     const [content, setContent] = useState('');
     const [initialContent, setInitialContent] = useState('');  // Estado para el contenido inicial
     const [fecha, setFecha] = useState('');
@@ -20,6 +20,11 @@ const Notas = ({ titulo, texto, clases, esMensual }) => {
             return false;
         }
         return true;
+    };
+
+    const formatearFecha = (fechaISO) => {
+        const opciones = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+        return new Date(fechaISO).toLocaleDateString('es-ES', opciones);
     };
 
     // Obtener los datos desde el storage
@@ -101,15 +106,6 @@ const Notas = ({ titulo, texto, clases, esMensual }) => {
         }
 
         timerGuardadoRef.current = setTimeout(() => {
-            const currentFecha = new Date().toLocaleString('es-ES', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-                hour12: false // Para formato de 24 horas
-            });
 
             if (esMensual) {
                 const storedData = localStorage.getItem(`${titulo}-${año}`);
@@ -153,7 +149,7 @@ const Notas = ({ titulo, texto, clases, esMensual }) => {
             ></textarea>
             {fecha !== null && fecha !== undefined && fecha.trim() !== "" && (
                 <p className='fechaGuardado'>
-                    {guardado ? `Guardado el: ${fecha}` : "Guardando..."}
+                    {guardado ? `Guardado el: ${formatearFecha(fecha)}` : "Guardando..."}
                 </p>
             )}
         </div>

@@ -64,6 +64,11 @@ export const DataProvider = ({ children }) => {
         setAño(date.getFullYear())
     }
 
+    
+    const currentFecha = new Date().toISOString();
+
+
+
     return (
         <DataContext.Provider
             value={{
@@ -76,7 +81,8 @@ export const DataProvider = ({ children }) => {
                 avanzarMes,
                 retrocederAño,
                 avanzarAño,
-                currentLocation
+                currentLocation,
+                currentFecha
             }}
         >
             {children}

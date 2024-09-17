@@ -1,7 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useContext } from 'react';
 import { crearDependencia } from './storageDependencies';
+import { DataContext } from '../context/dateContext';
 
 const FechasEspeciales = () => {
+    const { currentFecha } = useContext(DataContext);
+
     const isInitialized = useRef(false);
 
 
@@ -23,18 +26,6 @@ const FechasEspeciales = () => {
 
     // Guardar datos en localStorage cada vez que el estado cambia
     useEffect(() => {
-        const currentFecha = new Date().toLocaleString('es-ES', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: false // Para formato de 24 horas
-        });
-
-
-
 
         if (isInitialized.current) {
             localStorage.setItem('FechasEspeciales', JSON.stringify(calendario));
