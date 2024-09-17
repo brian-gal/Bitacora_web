@@ -1,24 +1,22 @@
-export const crearDependencia = (titulo, fecha, estaEnStorage, direccion) => {
-    // 1. Obtener el array de dependencias desde localStorage
+export const crearDependencia = (titulo, fecha) => {
+    // 1. Obtener los objetos de dependencias y actualizaciones desde localStorage
     const storedData = localStorage.getItem('Dependencias');
-    const dependencias = storedData ? JSON.parse(storedData) : [];
+    const actualizacionData = localStorage.getItem('ActualizacionPendiente');
 
-    // 2. Buscar si ya existe una dependencia con el mismo título
-    const index = dependencias.findIndex(dep => dep.titulo === titulo);
+    // 2. Convertir los datos almacenados en objetos, o iniciar con un objeto vacío si no existen
+    const dependencias = storedData ? JSON.parse(storedData) : {};
+    const ActualizacionPendiente = actualizacionData ? JSON.parse(actualizacionData) : {};
 
-    const nuevaDependencia = {
-        titulo: titulo,
-        fecha: fecha,
-    };
+    // 3. Agregar o actualizar el título en ambos objetos con su respectiva fecha
+    dependencias[titulo] = fecha;
+    ActualizacionPendiente[titulo] = fecha;
 
-    if (index !== -1) {
-        // Si existe, actualizar el objeto
-        dependencias[index] = nuevaDependencia;
-    } else {
-        // Si no existe, agregar el nuevo objeto al array
-        dependencias.push(nuevaDependencia);
-    }
-
-    // 3. Guardar el array actualizado en localStorage
+    // 4. Guardar ambos objetos actualizados en localStorage
     localStorage.setItem('Dependencias', JSON.stringify(dependencias));
+    localStorage.setItem('ActualizacionPendiente', JSON.stringify(ActualizacionPendiente));
 };
+
+
+
+
+

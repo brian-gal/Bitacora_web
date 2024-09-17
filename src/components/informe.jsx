@@ -1,9 +1,11 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { DataContext } from "../context/dateContext";
 import { crearDependencia } from "./storageDependencies";
+import { FireContext } from "../context/fireContext";
 
 const Informe = () => {
     const { dia, mes, año, currentFecha } = useContext(DataContext);
+    const { cargarDatosStorage } = useContext(FireContext);
 
     const isInitialized = useRef(false);
 
@@ -35,7 +37,7 @@ const Informe = () => {
 
     // Obtener los datos desde el storage
     useEffect(() => {
-        const storedData = localStorage.getItem(`Informe-${mes + 1}-${año}`);
+        const storedData = cargarDatosStorage(`Informe-${mes + 1}-${año}`);
 
         if (storedData && isJSON(storedData)) {
             const parsedData = JSON.parse(storedData);
@@ -62,7 +64,7 @@ const Informe = () => {
 
         if (isInitialized.current) {
             localStorage.setItem(clave, JSON.stringify(datos));
-            crearDependencia(clave, currentFecha, true, "probando")
+            crearDependencia(clave, currentFecha)
 
         } else {
 

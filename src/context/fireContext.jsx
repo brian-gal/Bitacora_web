@@ -9,11 +9,15 @@ export const FireContext = createContext({});
 export const FireProvider = ({ children }) => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
+    const [uid, setUid] = useState(true);
+
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (user) {
-                comprobarDatos(user.uid); // Pasar el UID al llamar la función
+                const uid = user.uid
+                comprobarDatos(uid); // Pasar el UID al llamar la función
+                setUid(uid)
                 navigate('/');
                 setLoading(true); // Cambia a false después de la navegación
             } else {
@@ -25,119 +29,35 @@ export const FireProvider = ({ children }) => {
     }, []);
 
     async function comprobarDatos(uid) {
-        const dependencias = JSON.parse(localStorage.getItem("Dependencias"));
-        const existeUid = await verificarExistenciaDocumento(uid)
-
-        if (dependencias) {
-            if (existeUid) { //actualiza los datos locales o externos dependiendo cual esta mas actualizado
-                console.log("ya existe el usuario, revisar dependencias");
-                try {
-                    let externaMasReciente = false;
-                    let localMasReciente = false;
-                    const dependenciasExterna = await obtenerDato("Dependencias", uid);
-
-                    //compara las dependencias para saber si hace falta actualizar algo
-                    dependencias.forEach((num) => {
-                        const externa = dependenciasExterna.find(ext => ext.titulo === num.titulo);
-                        if (externa) {
-                            // Comparar fechas
-                            if (num.fecha === externa.fecha) {
-
-                            } else if (num.fecha > externa.fecha) {
-                                const dato = JSON.parse(localStorage.getItem(num.titulo));
-                                subirDato(num.titulo, uid, dato)
-                                localMasReciente = true;
-                            } else {
-                                const datoExterno = obtenerDato(num.titulo, uid);
-                                localStorage.setItem(num.titulo, JSON.stringify(datoExterno));
-                                externaMasReciente = true;
-                            }
-                        } else {
-                            const dato = JSON.parse(localStorage.getItem(num.titulo));
-                            subirDato(num.titulo, uid, dato)
-                            localMasReciente = true;
-                        }
-                    });
-
-                    dependenciasExterna.forEach((ext) => {
-                        // Buscar si la dependencia externa existe en la interna
-                        const interna = dependencias.find(num => num.titulo === ext.titulo);
-
-                        if (!interna) {
-                            // No se encontró en la interna
-                            const datoExterno = obtenerDato(ext.titulo, uid);
-                            localStorage.setItem(ext.titulo, JSON.stringify(datoExterno));
-                            externaMasReciente = true;
-                        }
-                    });
-
-                    //actualiza el archivo de dependencias
-                    if (localMasReciente) {
-                        const dato = JSON.parse(localStorage.getItem("Dependencias"));
-                        subirDato("Dependencias", uid, dato)
-                    } else if (externaMasReciente) {
-                        const datoExterno = obtenerDato("Dependencias", uid);
-                        localStorage.setItem("Dependencias", JSON.stringify(datoExterno));
-                    }
-                    else {
-                        console.log("no hace falta actualizar nada");
-                    }
-                    console.log("todo actualizado");
-
-
-                } catch (error) {
-                    console.error("Error al comparar las dependencias en Firestore:", error);
-                }
-            }
-            else { //crea el usuario si no existe
-                try {
-                    const arrayTitulos = dependencias.map(item => item.titulo);
-                    await setDoc(doc(db, 'usuarios', uid), {
-                        Dependencias: dependencias
-                    });
-
-                    arrayTitulos.forEach(async (num) => {
-                        const dato = JSON.parse(localStorage.getItem(num));
-
-                        if (dato) {
-                            try {
-                                await setDoc(doc(db, 'usuarios', uid), {
-                                    [num]: dato
-                                }, { merge: true });
-                            } catch (error) {
-                                console.error(`Error al guardar ${num} en Firestore: `, error);
-                            }
-                        }
-                    });
-                } catch (error) {
-                    console.error("Error al crear el documento en Firestore:", error);
-                }
-            }
-        } else { //si localmente no esta el archivo de dependencias pero en la base de datos si, lo trae
-            if (existeUid) {
-                try {
-                    const dependenciasExterna = await obtenerDato("Dependencias", uid);
-                    localStorage.setItem('Dependencias', JSON.stringify(dependenciasExterna));
-                } catch (error) {
-                    console.error("Error al crear el archivo de dependencias interno desde el externo:", error);
-                }
-
-            } else {
-                
-            }
-        }
-    }
-
-    async function obtenerDato(titulo, uid) {
         try {
-            const docRef = doc(db, 'usuarios', uid);
-            const docSnap = await getDoc(docRef);
-            return docSnap.data()[titulo] || null;
+            // Obtener el objeto de actualizaciones pendientes
+            const ActualizacionPendiente = JSON.parse(localStorage.getItem("ActualizacionPendiente"));
+
+            // Si no hay actualizaciones pendientes, no hacer nada
+            if (!ActualizacionPendiente || Object.keys(ActualizacionPendiente).length === 0) {
+                return;
+            }
+
+            // Procesar cada clave (título) del objeto de actualizaciones pendientes
+            for (const titulo of Object.keys(ActualizacionPendiente)) {
+                // Obtener el dato del localStorage
+                const dato = localStorage.getItem(titulo);
+                if (dato) {
+                    // Subir el dato a la base de datos
+                    await subirDato(titulo, uid, dato);
+                } else {
+                    console.error(`No se encontró el dato para "${titulo}" en el localStorage.`);
+                }
+            }
+
+            // Una vez procesadas todas las actualizaciones, eliminar el archivo de actualizaciones
+            localStorage.removeItem("ActualizacionPendiente");
         } catch (error) {
-            console.error('Error al obtener los datos: ', error);
-            return null;
+            // Si ocurre un error, imprimirlo en consola sin eliminar el archivo de actualizaciones
+            console.error('Error al procesar las actualizaciones:', error);
         }
     }
+
 
     async function subirDato(titulo, uid, dato) {
         try {
@@ -152,7 +72,53 @@ export const FireProvider = ({ children }) => {
         }
     }
 
-    async function verificarExistenciaDocumento(uid) {
+    async function obtenerDato(titulo) {
+        try {
+            const docRef = doc(db, 'usuarios', uid);
+            const docSnap = await getDoc(docRef);
+            return docSnap.data()[titulo];
+        } catch (error) {
+            console.error('Error al obtener los datos: ', error);
+        }
+    }
+
+    async function cargarDatosStorage(titulo) {
+        try {
+            // Primero intentamos obtener el dato del localStorage
+            const savedData = localStorage.getItem(titulo);
+            console.log(titulo);
+
+            if (savedData) {
+                return savedData;
+            }
+
+            // Si el dato no está en el localStorage, revisamos el archivo de dependencias
+            const dependencias = localStorage.getItem("Dependencias");
+            if (dependencias) {
+
+                // Convertimos dependencias a un objeto
+                const dependenciasObj = JSON.parse(dependencias);
+
+                // Verificamos si el título está en las dependencias
+                if (titulo in dependenciasObj) {
+                    const datos = await obtenerDato(titulo);
+                    console.log(datos);
+                    localStorage.setItem(titulo, datos);
+                    return datos
+                } else {
+                    // Si el título no está en las dependencias, manejamos el caso
+                    console.warn(`El título "${titulo}" no está en las dependencias.`);
+                }
+            }
+
+        } catch (error) {
+            console.error('Error al obtener los datos:', error);
+        }
+    }
+
+
+
+    /* async function verificarExistenciaDocumento(uid) {
         try {
             const docRef = doc(db, 'usuarios', uid);
             const docSnap = await getDoc(docRef);
@@ -161,11 +127,11 @@ export const FireProvider = ({ children }) => {
             console.error('Error al verificar la existencia del documento: ', error);
             return false;
         }
-    }
+    } */
 
 
     return (
-        <FireContext.Provider value={{ loading }}>
+        <FireContext.Provider value={{ loading, cargarDatosStorage }}>
             {children}
         </FireContext.Provider>
     );

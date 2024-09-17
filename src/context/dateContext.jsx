@@ -64,9 +64,18 @@ export const DataProvider = ({ children }) => {
         setAño(date.getFullYear())
     }
 
-    
-    const currentFecha = new Date().toISOString();
 
+    const opciones = {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false // Formato 24 horas
+    };
+
+    const currentFecha = new Date().toLocaleString('es-ES', opciones);
 
 
     return (

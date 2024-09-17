@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef, useContext } from 'react';
 import { DataContext } from '../context/dateContext';
 import { crearDependencia } from './storageDependencies';
+import { FireContext } from '../context/fireContext';
 
 const Notas = ({ titulo, texto, clases, esMensual }) => {
     const { mes, año, currentFecha } = useContext(DataContext);
+    const { cargarDatosStorage } = useContext(FireContext);
     const [content, setContent] = useState('');
     const [initialContent, setInitialContent] = useState('');  // Estado para el contenido inicial
     const [fecha, setFecha] = useState('');
@@ -22,16 +24,11 @@ const Notas = ({ titulo, texto, clases, esMensual }) => {
         return true;
     };
 
-    const formatearFecha = (fechaISO) => {
-        const opciones = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-        return new Date(fechaISO).toLocaleDateString('es-ES', opciones);
-    };
-
     // Obtener los datos desde el storage
     useEffect(() => {
-        const fetchData = () => {
+        const fetchData = async () => {
             if (esMensual) {
-                const storedData = localStorage.getItem(`${titulo}-${año}`);
+                const storedData = await cargarDatosStorage(`${titulo}-${año}`);
                 let storedArray = Array(12).fill(null);
 
                 if (storedData && isJSON(storedData)) {
@@ -50,7 +47,7 @@ const Notas = ({ titulo, texto, clases, esMensual }) => {
                     setFecha('');
                 }
             } else {
-                const storedData = localStorage.getItem(titulo);
+                const storedData = await cargarDatosStorage(titulo);
                 if (storedData && isJSON(storedData)) {
                     const { content: savedContent, fecha: savedFecha } = JSON.parse(storedData);
                     setContent(savedContent || '');
@@ -124,11 +121,11 @@ const Notas = ({ titulo, texto, clases, esMensual }) => {
 
                 storedArray[mes] = newEntry;
                 localStorage.setItem(`${titulo}-${año}`, JSON.stringify(storedArray));
-                crearDependencia(`${titulo}-${año}`, currentFecha, true, "probando")
+                crearDependencia(`${titulo}-${año}`, currentFecha)
             } else {
                 const data = { content, fecha: currentFecha };
                 localStorage.setItem(titulo, JSON.stringify(data));
-                crearDependencia(titulo, currentFecha, true, "probando")
+                crearDependencia(titulo, currentFecha)
             }
 
             setFecha(currentFecha);
@@ -149,7 +146,7 @@ const Notas = ({ titulo, texto, clases, esMensual }) => {
             ></textarea>
             {fecha !== null && fecha !== undefined && fecha.trim() !== "" && (
                 <p className='fechaGuardado'>
-                    {guardado ? `Guardado el: ${formatearFecha(fecha)}` : "Guardando..."}
+                    {guardado ? `Guardado el: ${fecha}` : "Guardando..."}
                 </p>
             )}
         </div>

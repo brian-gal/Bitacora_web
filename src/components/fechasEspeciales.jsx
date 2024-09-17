@@ -1,9 +1,12 @@
 import { useState, useEffect, useRef, useContext } from 'react';
 import { crearDependencia } from './storageDependencies';
 import { DataContext } from '../context/dateContext';
+import { FireContext } from '../context/fireContext';
 
 const FechasEspeciales = () => {
     const { currentFecha } = useContext(DataContext);
+    const { cargarDatosStorage } = useContext(FireContext);
+
 
     const isInitialized = useRef(false);
 
@@ -22,6 +25,7 @@ const FechasEspeciales = () => {
     };
 
     const [calendario, setCalendario] = useState(loadFromLocalStorage);
+
     const [newDateLabel, setNewDateLabel] = useState('');
 
     // Guardar datos en localStorage cada vez que el estado cambia
@@ -29,8 +33,7 @@ const FechasEspeciales = () => {
 
         if (isInitialized.current) {
             localStorage.setItem('FechasEspeciales', JSON.stringify(calendario));
-            crearDependencia('FechasEspeciales', currentFecha, true, "probando")
-
+            crearDependencia('FechasEspeciales', currentFecha)
         } else {
             isInitialized.current = true;
         }
