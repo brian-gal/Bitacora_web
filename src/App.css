@@ -64,12 +64,20 @@ body {
 
 
 /* ---------------------------------Menu Fecha------------------------------------- */
-.menuFecha {
+.containerMenuFecha {
     position: fixed;
     top: 0;
     height: 50px;
     width: 100%;
+    background-color: #f0f0f0;
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+}
+
+.menuFecha {
     display: flex;
+    height: 50px;
+    width: 100%;
     align-items: center;
     background-color: #f0f0f0;
     box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
@@ -409,3 +417,51 @@ body {
     color: #0056b3;
 }
 
+.progress {
+    width: 100%;
+}
+
+/* ....................................................config............................................. */
+
+.config-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+}
+
+.config-meta {
+    text-align: center;
+}
+
+.config-meta h2 {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.config-meta label {
+    display: block;
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.config-meta input[type="range"] {
+    width: 100%;
+    max-width: 400px;
+}
+
+.config-cerrarSesion {
+    margin-top: auto;
+    padding: 10px 20px;
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.config-cerrarSesion:hover {
+    background-color: #ff1a1a;
+}

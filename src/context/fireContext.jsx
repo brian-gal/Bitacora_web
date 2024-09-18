@@ -1,12 +1,15 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { auth, db } from '../services/firebaseConfig'; // Asegúrate de tener esta configuración
 import { onAuthStateChanged } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { doc, getDoc, setDoc, collection } from "firebase/firestore";
+import { DataContext } from "./dateContext";
 
 export const FireContext = createContext({});
 
 export const FireProvider = ({ children }) => {
+    const { mes, año } = useContext(DataContext);
+
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [uid, setUid] = useState(true);
@@ -17,6 +20,15 @@ export const FireProvider = ({ children }) => {
             if (user) {
                 const uid = user.uid
                 comprobarDependencias("Dependencias", uid)
+                comprobarDependencias("config", uid)
+                comprobarDependencias("Notas", uid)
+                comprobarDependencias("FechasEspeciales", uid)
+                comprobarDependencias(`Broadcasting-${año}`, uid)
+                comprobarDependencias(`Gratitud-${año}`, uid)
+                comprobarDependencias(`Oraciones-${año}`, uid)
+                comprobarDependencias(`Gratitud-${año}`, uid)
+                comprobarDependencias(`Informe-${mes + 1}-${año}`, uid)
+
                 comprobarDatos(uid); // Pasar el UID al llamar la función
                 setUid(uid)
                 navigate('/');
@@ -115,16 +127,13 @@ export const FireProvider = ({ children }) => {
             const docSnap = await getDoc(docRef);
 
             if (!docSnap.exists()) {
-                console.error('El documento no existe');
                 return;
             }
 
             const data = docSnap.data();
 
-
             // Verifica si 'titulo' está en los datos del documento
             if (!(titulo in data)) {
-                console.error('El título no se encuentra en los datos del documento');
                 return;
             }
 

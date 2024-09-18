@@ -17,8 +17,8 @@ import PrivateRoute from './components/privateRoute';
 function App() {
     return (
         <BrowserRouter>
-            <FireProvider>
-                <DataProvider>
+            <DataProvider>
+                <FireProvider>
                     <MenuFecha />
                     <div className='contenedor' id='contenedorTotal'>
                         <Routes>
@@ -33,8 +33,8 @@ function App() {
                         <BotonScroll />
                     </div>
                     <NavBar />
-                </DataProvider>
-            </FireProvider>
+                </FireProvider>
+            </DataProvider>
         </BrowserRouter>
     );
 }

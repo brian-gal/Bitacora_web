@@ -4,7 +4,7 @@ import { crearDependencia } from "./storageDependencies";
 import { FireContext } from "../context/fireContext";
 
 const Informe = () => {
-    const { dia, mes, año, currentFecha } = useContext(DataContext);
+    const { dia, mes, año, currentFecha, setHorasPredi, horasPredi } = useContext(DataContext);
     const { cargarDatosStorage } = useContext(FireContext);
 
     // Estado para almacenar los datos de los inputs
@@ -34,7 +34,6 @@ const Informe = () => {
         async function prueba() {
             const titulo = `Informe-${mes + 1}-${año}`;
             const storedData = await cargarDatosStorage(titulo);
-            console.log(storedData);
 
             if (storedData && isJSON(storedData)) {
                 const parsedData = JSON.parse(storedData);
@@ -71,6 +70,12 @@ const Informe = () => {
 
     const daysInMonth = new Date(año, mes + 1, 0).getDate();
 
+    useEffect(() => {
+        // Calcular y guardar el total de horas cada vez que cambian los datos
+        const totalHoras = datos.reduce((acc, cur) => acc + (parseFloat(cur.horas) || 0), 0);
+        setHorasPredi(totalHoras);
+    }, [datos]);
+
     return (
         <>
             <h1 className='titulo'>Informe</h1>
@@ -79,7 +84,7 @@ const Informe = () => {
                     <tr>
                         <th>Día</th>
                         <th>Horas</th>
-                        <th>Revisitas</th>
+                        <th>Estudios</th>
                         <th>Publicaciones y videos</th>
                     </tr>
                 </thead>
@@ -93,6 +98,15 @@ const Informe = () => {
                         </tr>
                     ))}
                 </tbody>
+                <tfoot>
+                    <tr>
+                        <td><strong>Total</strong></td>
+                        <td>{horasPredi}</td>
+                        <td>{datos.reduce((acc, cur) => acc + (parseFloat(cur.revisitas) || 0), 0)}</td>
+                        <td>{datos.reduce((acc, cur) => acc + (parseFloat(cur.publicaciones) || 0), 0)}</td>
+                    </tr>
+                </tfoot>
+
             </table>
         </>
     );

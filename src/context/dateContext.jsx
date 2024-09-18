@@ -19,6 +19,8 @@ export const DataProvider = ({ children }) => {
     const [año, setAño] = useState(date.getFullYear());
     const location = useLocation();
     const [currentLocation, setCurrentLocation] = useState(location.pathname);
+    const [horasPredi, setHorasPredi] = useState(0);
+    const [metaHorasPredi, setMetaHorasPredi] = useState(10);
 
     // Actualizar el estado cada vez que cambie la ubicación
     useEffect(() => {
@@ -77,7 +79,6 @@ export const DataProvider = ({ children }) => {
 
     const currentFecha = new Date().toLocaleString('es-ES', opciones);
 
-
     return (
         <DataContext.Provider
             value={{
@@ -91,7 +92,11 @@ export const DataProvider = ({ children }) => {
                 retrocederAño,
                 avanzarAño,
                 currentLocation,
-                currentFecha
+                currentFecha,
+                setHorasPredi,
+                horasPredi,
+                setMetaHorasPredi,
+                metaHorasPredi
             }}
         >
             {children}
