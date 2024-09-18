@@ -1,26 +1,19 @@
 import { createContext, useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 
-// Crear el contexto
 export const DataContext = createContext({});
 
-// Meses del año
-const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-
-// Componente proveedor del contexto
 export const DataProvider = ({ children }) => {
     const date = new Date();
-
-
-    // Estado para manejar el día, mes y año
     const dia = date.getDate();
-
-    const [mes, setMes] = useState(date.getMonth());
-    const [año, setAño] = useState(date.getFullYear());
+    const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
     const location = useLocation();
+
     const [currentLocation, setCurrentLocation] = useState(location.pathname);
     const [horasPredi, setHorasPredi] = useState(0);
     const [metaHorasPredi, setMetaHorasPredi] = useState(10);
+    const [mes, setMes] = useState(date.getMonth());
+    const [año, setAño] = useState(date.getFullYear());
 
     // Actualizar el estado cada vez que cambie la ubicación
     useEffect(() => {
@@ -61,11 +54,11 @@ export const DataProvider = ({ children }) => {
         }
     };
 
+    //funcion para obtener fecha actual
     const fechaActual = () => {
         setMes(date.getMonth())
         setAño(date.getFullYear())
     }
-
 
     const opciones = {
         year: 'numeric',
@@ -82,21 +75,21 @@ export const DataProvider = ({ children }) => {
     return (
         <DataContext.Provider
             value={{
-                meses,
-                dia,
-                mes,
-                año,
                 fechaActual,
                 retrocederMes,
                 avanzarMes,
                 retrocederAño,
                 avanzarAño,
+                setMetaHorasPredi,
+                setHorasPredi,
                 currentLocation,
                 currentFecha,
-                setHorasPredi,
                 horasPredi,
-                setMetaHorasPredi,
-                metaHorasPredi
+                metaHorasPredi,
+                meses,
+                dia,
+                mes,
+                año
             }}
         >
             {children}

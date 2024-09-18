@@ -1,7 +1,7 @@
 import { useContext } from "react"
-import { DataContext } from "../context/dateContext"
+import { DataContext } from "../../context/dateContext"
 import { NavLink } from 'react-router-dom';
-import ProgressBar from "./progressBar";
+import ProgressBar from "../utilidades/progressBar";
 
 
 const MenuFecha = () => {
@@ -26,7 +26,7 @@ const MenuFecha = () => {
                 </div>
                 <NavLink className="menuFecha-icon" to="/config"><i className="bi bi-list"></i></NavLink>
             </div>
-            <ProgressBar/>
+            <ProgressBar />
         </div>
     )
 }

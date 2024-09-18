@@ -1,26 +1,44 @@
 import { useState, useEffect, useRef, useContext } from 'react';
-import { crearDependencia } from './storageDependencies';
-import { DataContext } from '../context/dateContext';
-import { FireContext } from '../context/fireContext';
+
+import { DataContext } from '../../context/dateContext';
+import { FireContext } from '../../context/fireContext';
 
 const FechasEspeciales = () => {
     const { currentFecha } = useContext(DataContext);
-    const { cargarDatosStorage } = useContext(FireContext);
-    const [calendario, setCalendario] = useState([]);
+    const { cargarDatosStorage, guardarDatoStorage } = useContext(FireContext);
+
+    const [calendario, setCalendario] = useState(arrayFechas());
+    const [newDateLabel, setNewDateLabel] = useState('');
 
     const isInitialized = useRef(false);
+
+    function arrayFechas() {
+        return ([
+            { label: 'Asamblea de Circuito', date: '', fecha: '' },
+            { label: 'Asamblea de Circuito 2', date: '', fecha: '' },
+            { label: 'Asamblea Regional', date: '', fecha: '' },
+            { label: 'Visita del superintendente', date: '', fecha: '' },
+            { label: 'Conmemoración', date: '', fecha: '' },
+        ]
+        )
+    }
 
     // Cargar datos del localStorage
     const loadFromLocalStorage = async () => {
         try {
             const savedData = await cargarDatosStorage('FechasEspeciales');
-            return savedData ? JSON.parse(savedData) : [
-                { label: 'Asamblea de Circuito', date: '', fecha: '' },
-                { label: 'Asamblea de Circuito 2', date: '', fecha: '' },
-                { label: 'Asamblea Regional', date: '', fecha: '' },
-                { label: 'Visita del superintendente', date: '', fecha: '' },
-                { label: 'Conmemoración', date: '', fecha: '' },
-            ];
+            if (savedData) {
+                return JSON.parse(savedData)
+            } else {
+                return [
+                    { label: 'Asamblea de Circuito', date: '', fecha: '' },
+                    { label: 'Asamblea de Circuito 2', date: '', fecha: '' },
+                    { label: 'Asamblea Regional', date: '', fecha: '' },
+                    { label: 'Visita del superintendente', date: '', fecha: '' },
+                    { label: 'Conmemoración', date: '', fecha: '' },
+                ];
+            }
+
         } catch (error) {
             console.error('Error loading data from localStorage:', error);
         }
@@ -34,14 +52,12 @@ const FechasEspeciales = () => {
         };
 
         fetchData();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const [newDateLabel, setNewDateLabel] = useState('');
-
     // Guardar datos en localStorage
-    const saveToLocalStorage = () => {
-        localStorage.setItem('FechasEspeciales', JSON.stringify(calendario));
-        crearDependencia('FechasEspeciales', currentFecha);
+    const saveToLocalStorage = (dato) => {
+        guardarDatoStorage('FechasEspeciales', currentFecha, dato);
     };
 
     // Maneja el cambio en los inputs de fecha
@@ -50,7 +66,7 @@ const FechasEspeciales = () => {
         updatedFechas[index].date = newDate;
         updatedFechas[index].fecha = new Date().toLocaleString();
         setCalendario(updatedFechas);
-        saveToLocalStorage();  // Guarda los datos cada vez que se cambia una fecha
+        saveToLocalStorage(updatedFechas);  // Guarda los datos cada vez que se cambia una fecha
     };
 
     // Maneja el cambio en los inputs del modal
@@ -61,10 +77,11 @@ const FechasEspeciales = () => {
     // Agregar nueva fecha
     const handleAddDate = () => {
         if (newDateLabel) {
-            const updatedFechas = [...calendario, { label: newDateLabel, date: '' }];
-            setCalendario(updatedFechas);
-            setNewDateLabel('');
-            saveToLocalStorage();  // Guarda los datos cuando se agrega una nueva fecha
+            const updatedFechas = [...calendario];  // Copia el array actual
+            updatedFechas.push({ label: newDateLabel, date: '', fecha: '' });  // Agrega el nuevo objeto al array
+            setCalendario(updatedFechas);  // Actualiza el estado con el nuevo array
+            saveToLocalStorage(updatedFechas);  // Guarda los datos cuando se agrega una nueva fecha
+            setNewDateLabel('');  // Limpia el campo de entrada después de agregar
 
             // Cerrar el modal usando bootstrap.Modal.getInstance
             const modalElement = document.querySelector('#exampleModal');
@@ -79,7 +96,7 @@ const FechasEspeciales = () => {
     const handleDeleteDate = (index) => {
         const updatedFechas = calendario.filter((_, i) => i !== index);
         setCalendario(updatedFechas);
-        saveToLocalStorage();  // Guarda los datos cuando se elimina una fecha
+        saveToLocalStorage(updatedFechas);  // Guarda los datos cuando se elimina una fecha
     };
 
     return (

@@ -1,11 +1,11 @@
-import { useContext, useEffect, useRef, useState } from "react";
-import { DataContext } from "../context/dateContext";
-import { crearDependencia } from "./storageDependencies";
-import { FireContext } from "../context/fireContext";
+import { useContext, useEffect, useState } from "react";
+
+import { FireContext } from "../../context/fireContext";
+import { DataContext } from "../../context/dateContext";
 
 const Informe = () => {
     const { dia, mes, año, currentFecha, setHorasPredi, horasPredi } = useContext(DataContext);
-    const { cargarDatosStorage } = useContext(FireContext);
+    const { cargarDatosStorage, guardarDatoStorage } = useContext(FireContext);
 
     // Estado para almacenar los datos de los inputs
     const [datos, setDatos] = useState(reiniciarValores());
@@ -44,6 +44,7 @@ const Informe = () => {
             }
         }
         prueba()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [mes, año]);
 
 
@@ -56,9 +57,8 @@ const Informe = () => {
 
             // Guardar en localStorage cuando se actualiza el estado
             const clave = `Informe-${mes + 1}-${año}`;
-            localStorage.setItem(clave, JSON.stringify(updatedDatos));
-            crearDependencia(clave, currentFecha);
 
+            guardarDatoStorage(clave, currentFecha, updatedDatos);
             return updatedDatos;
         });
     };
@@ -70,10 +70,12 @@ const Informe = () => {
 
     const daysInMonth = new Date(año, mes + 1, 0).getDate();
 
+
     useEffect(() => {
         // Calcular y guardar el total de horas cada vez que cambian los datos
         const totalHoras = datos.reduce((acc, cur) => acc + (parseFloat(cur.horas) || 0), 0);
         setHorasPredi(totalHoras);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [datos]);
 
     return (

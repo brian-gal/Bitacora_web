@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 import { Navigate } from 'react-router-dom';
-import { FireContext } from '../context/fireContext';
+import { FireContext } from '../../context/fireContext';
 
 const PrivateRoute = ({ element: Component, ...rest }) => {
     const { loading } = useContext(FireContext);

@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { DataContext } from "../context/dateContext";
+import { DataContext } from "../../context/dateContext";
 
 const BotonScroll = () => {
     const { dia, currentLocation } = useContext(DataContext);

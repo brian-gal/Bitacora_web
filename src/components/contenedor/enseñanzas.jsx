@@ -1,11 +1,10 @@
 import { useContext } from "react"
 import Notas from "./notas"
-import { DataContext } from "../context/dateContext"
+import { DataContext } from "../../context/dateContext"
 
 
 const Enseñanzas = () => {
     const { mes, meses } = useContext(DataContext)
-
     const esteMes = meses[mes].toLowerCase()
 
     return (

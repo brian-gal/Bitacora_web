@@ -19,7 +19,7 @@ export const FireProvider = ({ children }) => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (user) {
                 const uid = user.uid
-                comprobarDependencias("Dependencias", uid)
+                /* comprobarDependencias("Dependencias", uid)
                 comprobarDependencias("config", uid)
                 comprobarDependencias("Notas", uid)
                 comprobarDependencias("FechasEspeciales", uid)
@@ -27,9 +27,9 @@ export const FireProvider = ({ children }) => {
                 comprobarDependencias(`Gratitud-${año}`, uid)
                 comprobarDependencias(`Oraciones-${año}`, uid)
                 comprobarDependencias(`Gratitud-${año}`, uid)
-                comprobarDependencias(`Informe-${mes + 1}-${año}`, uid)
+                comprobarDependencias(`Informe-${mes + 1}-${año}`, uid) */
 
-                comprobarDatos(uid); // Pasar el UID al llamar la función
+                /* comprobarDatos(uid); */ // Pasar el UID al llamar la función
                 setUid(uid)
                 navigate('/');
                 setLoading(true); // Cambia a false después de la navegación
@@ -143,26 +143,31 @@ export const FireProvider = ({ children }) => {
         }
     }
 
-
     async function cargarDatosStorage(titulo) {
         try {
             // Primero intentamos obtener el dato del localStorage
             const savedData = localStorage.getItem(titulo);
 
+            //si el dato existe lo retorna y se detiene
             if (savedData) {
                 return savedData;
             }
 
             // Si el dato no está en el localStorage, revisamos el archivo de dependencias
             const dependencias = localStorage.getItem("Dependencias");
+
+            //si el archivo Dependencias existe
             if (dependencias) {
 
                 // Convertimos dependencias a un objeto
                 const dependenciasObj = JSON.parse(dependencias);
 
-                // Verificamos si el título está en las dependencias
+                // Verificamos si el archivo que buscamos está en alguna clave del archivo de dependencias
                 if (titulo in dependenciasObj) {
+                    //si lo esta, significa que exite en la base de datos y lo busca
                     const datos = await obtenerDato(titulo, uid);
+
+                    //luego solo si el dato es valido lo guarda para futuras consultas y retorna el dato
                     if (datos) {
                         localStorage.setItem(titulo, datos);
                         return datos
@@ -178,9 +183,27 @@ export const FireProvider = ({ children }) => {
         }
     }
 
+    function guardarDatoStorage(titulo, fecha, data) {
+        // 1. Obtener los objetos de dependencias y actualizaciones desde localStorage
+        const storedData = localStorage.getItem('Dependencias');
+        const actualizacionData = localStorage.getItem('ActualizacionPendiente');
+
+        // 2. Convertir los datos almacenados en objetos, o iniciar con un objeto vacío si no existen
+        const dependencias = storedData ? JSON.parse(storedData) : {};
+        const ActualizacionPendiente = actualizacionData ? JSON.parse(actualizacionData) : {};
+
+        // 3. Agregar o actualizar el título en ambos objetos con su respectiva fecha
+        dependencias[titulo] = fecha;
+        ActualizacionPendiente[titulo] = fecha;
+
+        // 4. Guardar ambos objetos actualizados en localStorage
+        localStorage.setItem(titulo, JSON.stringify(data));
+        localStorage.setItem('Dependencias', JSON.stringify(dependencias));
+        localStorage.setItem('ActualizacionPendiente', JSON.stringify(ActualizacionPendiente));
+    };
 
     return (
-        <FireContext.Provider value={{ loading, cargarDatosStorage, obtenerDato }}>
+        <FireContext.Provider value={{ loading, cargarDatosStorage, guardarDatoStorage, obtenerDato }}>
             {children}
         </FireContext.Provider>
     );

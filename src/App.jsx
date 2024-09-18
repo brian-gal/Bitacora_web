@@ -1,18 +1,24 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './App.css';
-import NavBar from './components/navBar';
+
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+
 import { DataProvider } from './context/dateContext';
-import Informe from './components/informe';
-import Notas from './components/notas';
 import { FireProvider } from './context/fireContext';
-import Enseñanzas from './components/enseñanzas';
-import FechasEspeciales from './components/fechasEspeciales';
-import MenuFecha from './components/menuFecha';
-import BotonScroll from './components/botonScroll';
-import Config from './components/config';
-import InicioSesion from './components/inicioSesion';
-import CrearCuenta from './components/crearCuenta';
-import PrivateRoute from './components/privateRoute';
+
+import MenuFecha from './components/menus/menuFecha';
+import NavBar from './components/menus/navBar';
+
+import Config from './components/contenedor/config';
+import FechasEspeciales from './components/contenedor/fechasEspeciales';
+import Enseñanzas from './components/contenedor/enseñanzas';
+import Notas from './components/contenedor/notas';
+import Informe from './components/contenedor/informe';
+
+import InicioSesion from './components/inicioSesion/inicioSesion';
+import CrearCuenta from './components/inicioSesion/crearCuenta';
+import PrivateRoute from './components/inicioSesion/privateRoute';
+
+import BotonScroll from './components/utilidades/botonScroll';
 
 function App() {
     return (

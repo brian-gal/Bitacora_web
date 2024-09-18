@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 import { NavLink } from 'react-router-dom';
-import { DataContext } from '../context/dateContext';
+import { DataContext } from '../../context/dateContext';
 
 const NavBar = () => {
     const { fechaActual } = useContext(DataContext)
