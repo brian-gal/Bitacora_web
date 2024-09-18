@@ -23,6 +23,7 @@ const InicioSesion = () => {
                 await auth.signOut();
                 return;
             }
+            localStorage.clear();
 
         } catch (error) {
             const errorCode = error.code;

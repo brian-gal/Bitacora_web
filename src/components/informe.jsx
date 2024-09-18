@@ -34,18 +34,22 @@ const Informe = () => {
         }));
     }
 
-
     // Obtener los datos desde el storage
     useEffect(() => {
-        const storedData = cargarDatosStorage(`Informe-${mes + 1}-${año}`);
+        async function prueba() {
+            const titulo = `Informe-${mes + 1}-${año}`;
+            const storedData = await cargarDatosStorage(titulo);
+            console.log(storedData);
 
-        if (storedData && isJSON(storedData)) {
-            const parsedData = JSON.parse(storedData);
-            setDatos(parsedData);
-        } else {
-            // Si no hay datos en el localStorage, reiniciar el estado con días vacíos
-            setDatos(reiniciarValores());
+            if (storedData && isJSON(storedData)) {
+                const parsedData = JSON.parse(storedData);
+                setDatos(parsedData);
+            } else {
+                // Si no hay datos en el localStorage, reiniciar el estado con días vacíos
+                setDatos(reiniciarValores());
+            }
         }
+        prueba()
     }, [mes, año]);
 
     // Función para actualizar los datos en el estado
