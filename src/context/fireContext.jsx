@@ -120,7 +120,7 @@ export const FireProvider = ({ children }) => {
             }
 
             const data = docSnap.data();
-            console.log('Datos obtenidos:', data);
+
 
             // Verifica si 'titulo' está en los datos del documento
             if (!(titulo in data)) {
@@ -139,7 +139,6 @@ export const FireProvider = ({ children }) => {
         try {
             // Primero intentamos obtener el dato del localStorage
             const savedData = localStorage.getItem(titulo);
-            console.log(titulo);
 
             if (savedData) {
                 return savedData;
@@ -172,7 +171,7 @@ export const FireProvider = ({ children }) => {
 
 
     return (
-        <FireContext.Provider value={{ loading, cargarDatosStorage }}>
+        <FireContext.Provider value={{ loading, cargarDatosStorage, obtenerDato }}>
             {children}
         </FireContext.Provider>
     );

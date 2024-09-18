@@ -7,13 +7,8 @@ const Informe = () => {
     const { dia, mes, año, currentFecha } = useContext(DataContext);
     const { cargarDatosStorage } = useContext(FireContext);
 
-    const isInitialized = useRef(false);
-
     // Estado para almacenar los datos de los inputs
     const [datos, setDatos] = useState(reiniciarValores());
-
-    // Estado para verificar si los datos han sido modificados
-    const [modificado, setModificado] = useState(true);
 
     const isJSON = (str) => {
         try {
@@ -52,42 +47,27 @@ const Informe = () => {
         prueba()
     }, [mes, año]);
 
-    // Función para actualizar los datos en el estado
+
+    // Función para manejar el evento de cambio en los inputs
     const handleChange = (day, field, value) => {
-        setDatos(prevDatos =>
-            prevDatos.map(dato =>
+        setDatos(prevDatos => {
+            const updatedDatos = prevDatos.map(dato =>
                 dato.dia === day ? { ...dato, [field]: value } : dato
-            )
-        );
-        setModificado(true);  // Marca como modificado
-    };
+            );
 
-    // Función para guardar los datos en localStorage
-    const saveToLocalStorage = () => {
-        const clave = `Informe-${mes + 1}-${año}`; // La clave en localStorage
+            // Guardar en localStorage cuando se actualiza el estado
+            const clave = `Informe-${mes + 1}-${año}`;
+            localStorage.setItem(clave, JSON.stringify(updatedDatos));
+            crearDependencia(clave, currentFecha);
 
-        if (isInitialized.current) {
-            localStorage.setItem(clave, JSON.stringify(datos));
-            crearDependencia(clave, currentFecha)
-
-        } else {
-
-            isInitialized.current = true;
-        }
+            return updatedDatos;
+        });
     };
 
     // Función para manejar el evento de cambio en los inputs
     const handleInputChange = (day, field) => (event) => {
         handleChange(day, field, event.target.value);
     };
-
-    // useEffect para guardar los datos en localStorage solo si han sido modificados
-    useEffect(() => {
-        if (modificado) {
-            saveToLocalStorage();
-            setModificado(false);  // Reinicia la bandera después de guardar
-        }
-    }, [datos, modificado]);
 
     const daysInMonth = new Date(año, mes + 1, 0).getDate();
 

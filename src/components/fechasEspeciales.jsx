@@ -6,40 +6,43 @@ import { FireContext } from '../context/fireContext';
 const FechasEspeciales = () => {
     const { currentFecha } = useContext(DataContext);
     const { cargarDatosStorage } = useContext(FireContext);
-
+    const [calendario, setCalendario] = useState([]);
 
     const isInitialized = useRef(false);
 
-
     // Cargar datos del localStorage
-    const loadFromLocalStorage = () => {
-        const savedData = localStorage.getItem('FechasEspeciales');
-
-        return savedData ? JSON.parse(savedData) : [
-            { label: 'Asamblea de Circuito', date: '', fecha: '' },
-            { label: 'Asamblea de Circuito 2', date: '', fecha: '' },
-            { label: 'Asamblea Regional', date: '', fecha: '' },
-            { label: 'Visita del superintendente', date: '', fecha: '' },
-            { label: 'Conmemoración', date: '', fecha: '' },
-        ];
+    const loadFromLocalStorage = async () => {
+        try {
+            const savedData = await cargarDatosStorage('FechasEspeciales');
+            return savedData ? JSON.parse(savedData) : [
+                { label: 'Asamblea de Circuito', date: '', fecha: '' },
+                { label: 'Asamblea de Circuito 2', date: '', fecha: '' },
+                { label: 'Asamblea Regional', date: '', fecha: '' },
+                { label: 'Visita del superintendente', date: '', fecha: '' },
+                { label: 'Conmemoración', date: '', fecha: '' },
+            ];
+        } catch (error) {
+            console.error('Error loading data from localStorage:', error);
+        }
     };
 
-    const [calendario, setCalendario] = useState(loadFromLocalStorage);
+    useEffect(() => {
+        const fetchData = async () => {
+            const data = await loadFromLocalStorage();
+            setCalendario(data);
+            isInitialized.current = true;  // Marca que la carga inicial ha finalizado
+        };
+
+        fetchData();
+    }, []);
 
     const [newDateLabel, setNewDateLabel] = useState('');
 
-    // Guardar datos en localStorage cada vez que el estado cambia
-    useEffect(() => {
-
-        if (isInitialized.current) {
-            localStorage.setItem('FechasEspeciales', JSON.stringify(calendario));
-            crearDependencia('FechasEspeciales', currentFecha)
-        } else {
-            isInitialized.current = true;
-        }
-    }, [calendario]);
-
-
+    // Guardar datos en localStorage
+    const saveToLocalStorage = () => {
+        localStorage.setItem('FechasEspeciales', JSON.stringify(calendario));
+        crearDependencia('FechasEspeciales', currentFecha);
+    };
 
     // Maneja el cambio en los inputs de fecha
     const handleDateChange = (index, newDate) => {
@@ -47,6 +50,7 @@ const FechasEspeciales = () => {
         updatedFechas[index].date = newDate;
         updatedFechas[index].fecha = new Date().toLocaleString();
         setCalendario(updatedFechas);
+        saveToLocalStorage();  // Guarda los datos cada vez que se cambia una fecha
     };
 
     // Maneja el cambio en los inputs del modal
@@ -60,6 +64,7 @@ const FechasEspeciales = () => {
             const updatedFechas = [...calendario, { label: newDateLabel, date: '' }];
             setCalendario(updatedFechas);
             setNewDateLabel('');
+            saveToLocalStorage();  // Guarda los datos cuando se agrega una nueva fecha
 
             // Cerrar el modal usando bootstrap.Modal.getInstance
             const modalElement = document.querySelector('#exampleModal');
@@ -74,6 +79,7 @@ const FechasEspeciales = () => {
     const handleDeleteDate = (index) => {
         const updatedFechas = calendario.filter((_, i) => i !== index);
         setCalendario(updatedFechas);
+        saveToLocalStorage();  // Guarda los datos cuando se elimina una fecha
     };
 
     return (
