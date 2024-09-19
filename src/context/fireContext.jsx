@@ -11,10 +11,15 @@ export const FireContext = createContext({});
 export const FireProvider = ({ children }) => {
     const { mes, año } = useContext(DataContext);
 
+    // Estado para almacenar los datos de los inputs
+    const [datos, setDatos] = useState(reiniciarValores());
+
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [logueado, setLogueado] = useState(true);
-    const [localMasActualizada, setLocalMasActualizada] = useState(false);
+
+    /* ...................corregir................... */
+    const [localMasActualizada, setLocalMasActualizada] = useState(true);
 
     const [uid, setUid] = useState(true);
 
@@ -24,13 +29,12 @@ export const FireProvider = ({ children }) => {
                 revisarSiExistePrincipalStorage(`Informe-${mes + 1}-${año}`, "Dependencias")
                 const uid = user.uid
                 setUid(uid)
-                /* subirUltimasActualizaciones(uid) */
-                console.log("seguir actualizando")
+                subirUltimasActualizaciones(uid) 
                 cargarArchivosInicioDependencia("Dependencias", uid)
                 cargarArchivosInicio(`Informe-${mes + 1}-${año}`, uid)
                 cargarArchivosInicio("Config", uid)
                 setLoading(true); //una vez cargados los tres primeros archivo carga el componente
-                revisarSincronizacion(uid)
+                revisarSincronizacion(uid) 
                 navigate('/');
                 cargarArchivosInicio("FechasEspeciales", uid)
                 cargarArchivosInicio("Notas", uid)
@@ -54,8 +58,6 @@ export const FireProvider = ({ children }) => {
         if (storedData && storedData2) {
             setLoading(true);
             navigate('/');
-            console.log("cargar pagina principal");
-
         }
     }
 
@@ -81,7 +83,7 @@ export const FireProvider = ({ children }) => {
             console.error(`Error al cargar archivo de inicio ${titulo}:`, error);
         }
     }
-    /* -----------------------------------------------------revisar--------------------------------------------------- */
+
     //una vez obtenido o no el archivo principal revisa si existen otros archivo secundarios, en base al principal
     async function cargarArchivosInicio(titulo, uid) {
         try {
@@ -97,6 +99,19 @@ export const FireProvider = ({ children }) => {
 
             if (dato) {
                 guardaStorage(titulo, dato);
+
+                //carga el informe ya que al ser la pestaña principal no logra actualizar los datos desde el storage
+                if (titulo == `Informe-${mes + 1}-${año}`) {
+                    const storedData = dato;
+
+                    if (storedData && isJSON(storedData)) {
+                        const parsedData = JSON.parse(storedData);
+                        setDatos(parsedData);
+                    } else {
+                        // Si no hay datos en el localStorage, reiniciar el estado con días vacíos
+                        setDatos(reiniciarValores());
+                    }
+                }
             } else {
                 console.log(`el dato no existe en firebase: ${titulo}`);
             }
@@ -129,12 +144,12 @@ export const FireProvider = ({ children }) => {
                 // Verificamos si el archivo que buscamos está en alguna clave del archivo de dependencias
                 if (titulo in dependenciasObj) {
                     //si lo esta, significa que exite en la base de datos y lo busca
-                    const datos = await obtenerDatoFirebase(titulo, uid);
+                    const datosObtenidos = await obtenerDatoFirebase(titulo, uid);
 
                     //luego solo si el dato es valido lo guarda para futuras consultas y retorna el dato
-                    if (datos) {
+                    if (datosObtenidos) {
                         localStorage.setItem(titulo, datos);
-                        return datos
+                        return datosObtenidos
                     }
                 } else {
                     // Si el título no está en las dependencias, manejamos el caso
@@ -257,43 +272,34 @@ export const FireProvider = ({ children }) => {
         }
     }
 
+    /* ...................corregir..................... */
     async function revisarSincronizacion(uid) {
-        try {
-            // Obtener el objeto de actualizaciones pendientes
-            const config = JSON.parse(localStorage.getItem("config"));
-            if (!config || !config.ultimaActualizacion) {
-                // Si no hay configuración o última actualización local, consideramos los datos locales como los más actualizados
-                setLocalMasActualizada(true);
-                return;
-            }
+        
+    } 
 
-            const ultimaActualizacionLocal = config.ultimaActualizacion;
-
-            // Obtener la configuración externa desde Firebase
-            const configExterna = await obtenerDatoFirebase(config, uid);
-
-            if (configExterna && configExterna.ultimaActualizacion) {
-                const ultimaActualizacionExterna = configExterna.ultimaActualizacion;
-                const comparacion = ultimaActualizacionLocal > ultimaActualizacionExterna;
-
-                if (comparacion) {
-                    setLocalMasActualizada(true);
-                } else {
-                    setLocalMasActualizada(false);
-                    alert("Los datos están desactualizados");
-                }
-            } else {
-                // Si no hay datos externos, asumimos que los datos locales son los más actualizados
-                setLocalMasActualizada(true);
-            }
-        } catch (error) {
-            console.error('Error al revisar sincronización:', error);
-            setLocalMasActualizada(true); // Asumimos que los datos locales son más actualizados en caso de error
-        }
+    function reiniciarValores() {
+        return Array.from({ length: new Date(año, mes + 1, 0).getDate() }, (_, i) => ({
+            dia: i + 1,
+            horas: "",
+            revisitas: "",
+            publicaciones: ""
+        }));
     }
 
+    function isJSON(str) {
+        try {
+            JSON.parse(str);
+        } catch (e) {
+            console.error(e)
+            return false;
+        }
+        return true;
+    };
+
+
+
     return (
-        <FireContext.Provider value={{ loading, logueado, setLogueado, cargarDatosStorage, guardarDatoStorage, uid }}>
+        <FireContext.Provider value={{ loading, logueado, setLogueado, cargarDatosStorage, guardarDatoStorage, uid, datos, setDatos, isJSON, reiniciarValores }}>
             {children}
         </FireContext.Provider>
     );

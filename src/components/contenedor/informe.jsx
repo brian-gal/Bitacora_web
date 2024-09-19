@@ -5,36 +5,15 @@ import { DataContext } from "../../context/dateContext";
 
 const Informe = () => {
     const { dia, mes, año, currentFecha, setHorasPredi, horasPredi } = useContext(DataContext);
-    const { cargarDatosStorage, guardarDatoStorage, uid } = useContext(FireContext);
-
-    // Estado para almacenar los datos de los inputs
-    const [datos, setDatos] = useState(reiniciarValores());
-
-    const isJSON = (str) => {
-        try {
-            JSON.parse(str);
-        } catch (e) {
-            console.error(e)
-            return false;
-        }
-        return true;
-    };
-
-    function reiniciarValores() {
-        return Array.from({ length: new Date(año, mes + 1, 0).getDate() }, (_, i) => ({
-            dia: i + 1,
-            horas: "",
-            revisitas: "",
-            publicaciones: ""
-        }));
-    }
+    const { cargarDatosStorage, guardarDatoStorage, uid, datos, setDatos, isJSON, reiniciarValores  } = useContext(FireContext);
 
     // Obtener los datos desde el storage
     useEffect(() => {
-        async function prueba() {
+
+        async function cargarInforme() {
             const titulo = `Informe-${mes + 1}-${año}`;
             const storedData = await cargarDatosStorage(titulo, uid);
-
+    
             if (storedData && isJSON(storedData)) {
                 const parsedData = JSON.parse(storedData);
                 setDatos(parsedData);
@@ -43,7 +22,8 @@ const Informe = () => {
                 setDatos(reiniciarValores());
             }
         }
-        prueba()
+        
+        cargarInforme()
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [mes, año]);
 
