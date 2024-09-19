@@ -9,10 +9,9 @@ export const DataProvider = ({ children }) => {
     const dia = date.getDate();
     const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
     const location = useLocation();
-
+    const [metaHorasPredi, setMetaHorasPredi] = useState(10);
     const [currentLocation, setCurrentLocation] = useState(location.pathname);
     const [horasPredi, setHorasPredi] = useState(0);
-    const [metaHorasPredi, setMetaHorasPredi] = useState(10);
     const [mes, setMes] = useState(date.getMonth());
     const [año, setAño] = useState(date.getFullYear());
 
@@ -71,16 +70,16 @@ export const DataProvider = ({ children }) => {
                 avanzarMes,
                 retrocederAño,
                 avanzarAño,
-                setMetaHorasPredi,
                 setHorasPredi,
                 currentLocation,
                 currentFecha,
                 horasPredi,
-                metaHorasPredi,
                 meses,
                 dia,
                 mes,
-                año
+                año,
+                metaHorasPredi,
+                setMetaHorasPredi
             }}
         >
             {children}

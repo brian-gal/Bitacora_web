@@ -2,7 +2,7 @@ import { useContext, useState } from "react";
 import { getAuth, createUserWithEmailAndPassword, sendEmailVerification, signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
 import { Link } from 'react-router-dom';
 import { FireContext } from "../../context/fireContext";
-
+import Swal from 'sweetalert2'
 
 const InicioSesion = () => {
     const { setLogueado } = useContext(FireContext);
@@ -21,18 +21,33 @@ const InicioSesion = () => {
             const user = userCredential.user;
 
             if (!user.emailVerified) {
-                alert("Por favor, verifica tu correo electrónico antes de iniciar sesión.");
+                Swal.fire("Por favor, verifica tu correo electrónico antes de iniciar sesión.");
                 // Opcional: Cerrar sesión o redirigir al usuario a una página de verificación
                 await auth.signOut();
                 return;
             }
             setLogueado(true)
+            const Toast = Swal.mixin({
+                toast: true,
+                position: "center",
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.onmouseenter = Swal.stopTimer;
+                    toast.onmouseleave = Swal.resumeTimer;
+                }
+            });
+            Toast.fire({
+                icon: "success",
+                title: "Has iniciado sesion con exito"
+            });
 
         } catch (error) {
             const errorCode = error.code;
             const errorMessage = error.message;
             console.error("Error al iniciar sesión:", errorCode, errorMessage);
-            alert("Error al iniciar sesión: " + errorMessage);
+            Swal.fire("correo o clave incorrecto, si no tienes una cuenta create una");
         }
     };
 

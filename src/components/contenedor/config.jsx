@@ -1,31 +1,14 @@
 import { getAuth, signOut } from "firebase/auth";
-import { useContext, useEffect, useRef } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 
 import { DataContext } from "../../context/dateContext";
 import { FireContext } from "../../context/fireContext";
 
 const Config = () => {
-    const { setMetaHorasPredi, metaHorasPredi, currentFecha } = useContext(DataContext);
-    const { cargarDatosStorage, guardarDatoStorage, uid } = useContext(FireContext);
+    const { currentFecha, metaHorasPredi, setMetaHorasPredi } = useContext(DataContext);
+    const { guardarDatoStorage, } = useContext(FireContext);
 
     const prevMetaHorasPrediRef = useRef(metaHorasPredi);
-
-    //cargar datos del storage
-    useEffect(() => {
-        const fetchData = async () => {
-            const data = await cargarDatosStorage("Config", uid);
-
-            if (data) {
-                const meta = JSON.parse(data)
-                if (meta.metaHorasPredi) {
-                    setMetaHorasPredi(meta.metaHorasPredi)
-                }
-            }
-        };
-
-        fetchData();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
 
     useEffect(() => {
         if (prevMetaHorasPrediRef.current !== metaHorasPredi) {

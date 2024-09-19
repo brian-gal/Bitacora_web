@@ -1,11 +1,11 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect } from "react";
 
 import { FireContext } from "../../context/fireContext";
 import { DataContext } from "../../context/dateContext";
 
 const Informe = () => {
     const { dia, mes, año, currentFecha, setHorasPredi, horasPredi } = useContext(DataContext);
-    const { cargarDatosStorage, guardarDatoStorage, uid, datos, setDatos, isJSON, reiniciarValores  } = useContext(FireContext);
+    const { cargarDatosStorage, guardarDatoStorage, uid, datos, setDatos, isJSON, reiniciarValores } = useContext(FireContext);
 
     // Obtener los datos desde el storage
     useEffect(() => {
@@ -13,7 +13,7 @@ const Informe = () => {
         async function cargarInforme() {
             const titulo = `Informe-${mes + 1}-${año}`;
             const storedData = await cargarDatosStorage(titulo, uid);
-    
+
             if (storedData && isJSON(storedData)) {
                 const parsedData = JSON.parse(storedData);
                 setDatos(parsedData);
@@ -22,7 +22,7 @@ const Informe = () => {
                 setDatos(reiniciarValores());
             }
         }
-        
+
         cargarInforme()
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [mes, año]);

@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { auth, db } from '../services/firebaseConfig'; // Asegúrate de tener esta configuración
-import { onAuthStateChanged } from "firebase/auth";
+import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { DataContext } from "./dateContext";
@@ -9,17 +9,14 @@ export const FireContext = createContext({});
 
 // eslint-disable-next-line react/prop-types
 export const FireProvider = ({ children }) => {
-    const { mes, año } = useContext(DataContext);
-
-    // Estado para almacenar los datos de los inputs
+    const { mes, año, setMetaHorasPredi } = useContext(DataContext);
     const [datos, setDatos] = useState(reiniciarValores());
-
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [logueado, setLogueado] = useState(true);
 
     /* ...................corregir................... */
-    const [localMasActualizada, setLocalMasActualizada] = useState(true);
+    const [localMasActualizada, setLocalMasActualizada] = useState(false);
 
     const [uid, setUid] = useState(true);
 
@@ -29,12 +26,12 @@ export const FireProvider = ({ children }) => {
                 revisarSiExistePrincipalStorage(`Informe-${mes + 1}-${año}`, "Dependencias")
                 const uid = user.uid
                 setUid(uid)
-                subirUltimasActualizaciones(uid) 
+                subirUltimasActualizaciones(uid)
                 cargarArchivosInicioDependencia("Dependencias", uid)
                 cargarArchivosInicio(`Informe-${mes + 1}-${año}`, uid)
                 cargarArchivosInicio("Config", uid)
                 setLoading(true); //una vez cargados los tres primeros archivo carga el componente
-                revisarSincronizacion(uid) 
+                revisarSincronizacion(uid)
                 navigate('/');
                 cargarArchivosInicio("FechasEspeciales", uid)
                 cargarArchivosInicio("Notas", uid)
@@ -112,6 +109,19 @@ export const FireProvider = ({ children }) => {
                         setDatos(reiniciarValores());
                     }
                 }
+
+                //cargar barra de progreso
+                if (titulo == `Config`) {
+                    const data = dato;
+                    if (data) {
+                        const meta = JSON.parse(data)
+                        if (meta.metaHorasPredi) {
+                            setMetaHorasPredi(meta.metaHorasPredi)
+                        }
+                    }
+                }
+
+
             } else {
                 console.log(`el dato no existe en firebase: ${titulo}`);
             }
@@ -272,10 +282,65 @@ export const FireProvider = ({ children }) => {
         }
     }
 
-    /* ...................corregir..................... */
     async function revisarSincronizacion(uid) {
-        
-    } 
+        try {
+            // Obtener el objeto de actualizaciones pendientes
+            const config = JSON.parse(localStorage.getItem("Config"));
+            console.log("Config local obtenida:", config);
+
+            if (!config || !config.ultimaActualizacion) {
+                // Si no hay configuración o última actualización local, consideramos los datos locales como los más actualizados
+                console.log("No hay config local o no tiene 'ultimaActualizacion'. Asumimos que los datos locales están actualizados.");
+                setLocalMasActualizada(true);
+                return;
+            }
+
+            const ultimaActualizacionLocal = config.ultimaActualizacion;
+            console.log("Ultima actualización local:", ultimaActualizacionLocal);
+
+            // Obtener la configuración externa desde Firebase
+            const configExterna = await obtenerDatoFirebase("Config", uid);
+            console.log("Config externa obtenida desde Firebase (sin parsear):", configExterna);
+
+            // Si configExterna es un string JSON, necesitarás hacer parse
+            const externalConfigParsed = typeof configExterna === 'string' ? JSON.parse(configExterna) : configExterna;
+            console.log("Config externa después de parsear si es necesario:", externalConfigParsed);
+
+            if (externalConfigParsed && externalConfigParsed.ultimaActualizacion) {
+                const ultimaActualizacionExterna = externalConfigParsed.ultimaActualizacion;
+                console.log("Ultima actualización externa:", ultimaActualizacionExterna);
+
+                const comparacion = ultimaActualizacionLocal >= ultimaActualizacionExterna;
+                console.log("Comparación de fechas (local >= externa):", comparacion);
+
+                if (comparacion) {
+                    console.log("Datos locales están más actualizados o iguales. No es necesario actualizar.");
+                    setLocalMasActualizada(true);
+                } else {
+                    console.log("Datos locales están desactualizados.");
+
+                    setLocalMasActualizada(false);
+                    alert("Los datos están desactualizados");
+                    function cerrarSesion() {
+                        const auth = getAuth();
+                        signOut(auth).then(() => {
+                            localStorage.clear();
+                        }).catch((error) => {
+                            console.log(error);
+                        });
+                    }
+                    cerrarSesion()
+                }
+            } else {
+                // Si no hay datos externos, asumimos que los datos locales son los más actualizados
+                console.log("No se encontraron datos externos o la configuración externa no tiene 'ultimaActualizacion'. Asumimos que los datos locales están actualizados.");
+                setLocalMasActualizada(true);
+            }
+        } catch (error) {
+            console.error('Error al revisar sincronización:', error);
+            setLocalMasActualizada(true); // Asumimos que los datos locales son más actualizados en caso de error
+        }
+    }
 
     function reiniciarValores() {
         return Array.from({ length: new Date(año, mes + 1, 0).getDate() }, (_, i) => ({
@@ -295,7 +360,6 @@ export const FireProvider = ({ children }) => {
         }
         return true;
     };
-
 
 
     return (

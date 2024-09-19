@@ -1,8 +1,28 @@
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { DataContext } from "../../context/dateContext";
+import { FireContext } from "../../context/fireContext";
 
 const ProgressBar = () => {
-    const { horasPredi, metaHorasPredi } = useContext(DataContext);
+    const { horasPredi, metaHorasPredi, setMetaHorasPredi } = useContext(DataContext);
+    const { cargarDatosStorage, uid } = useContext(FireContext);
+
+    //cargar datos del storage
+    useEffect(() => {
+        const fetchData = async () => {
+            const data = await cargarDatosStorage("Config", uid);
+
+            if (data) {
+                const meta = JSON.parse(data)
+                if (meta.metaHorasPredi) {
+                    setMetaHorasPredi(meta.metaHorasPredi)
+                }
+            }
+        };
+        console.log("probando");
+
+        fetchData();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // Calcula el progreso en porcentaje
     const progreso = (horasPredi / metaHorasPredi) * 100;
