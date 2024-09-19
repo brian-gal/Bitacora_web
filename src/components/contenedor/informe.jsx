@@ -5,7 +5,7 @@ import { DataContext } from "../../context/dateContext";
 
 const Informe = () => {
     const { dia, mes, año, currentFecha, setHorasPredi, horasPredi } = useContext(DataContext);
-    const { cargarDatosStorage, guardarDatoStorage } = useContext(FireContext);
+    const { cargarDatosStorage, guardarDatoStorage, uid } = useContext(FireContext);
 
     // Estado para almacenar los datos de los inputs
     const [datos, setDatos] = useState(reiniciarValores());
@@ -33,7 +33,7 @@ const Informe = () => {
     useEffect(() => {
         async function prueba() {
             const titulo = `Informe-${mes + 1}-${año}`;
-            const storedData = await cargarDatosStorage(titulo);
+            const storedData = await cargarDatosStorage(titulo, uid);
 
             if (storedData && isJSON(storedData)) {
                 const parsedData = JSON.parse(storedData);

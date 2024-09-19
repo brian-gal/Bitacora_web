@@ -1,9 +1,12 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { getAuth, createUserWithEmailAndPassword, sendEmailVerification, signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
 import { Link } from 'react-router-dom';
+import { FireContext } from "../../context/fireContext";
 
 
 const InicioSesion = () => {
+    const { setLogueado } = useContext(FireContext);
+
     const [loginEmail, setLoginEmail] = useState("");
     const [loginPassword, setLoginPassword] = useState("");
 
@@ -23,7 +26,7 @@ const InicioSesion = () => {
                 await auth.signOut();
                 return;
             }
-            localStorage.clear();
+            setLogueado(true)
 
         } catch (error) {
             const errorCode = error.code;

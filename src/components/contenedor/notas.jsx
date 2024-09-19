@@ -5,7 +5,7 @@ import { FireContext } from '../../context/fireContext';
 // eslint-disable-next-line react/prop-types
 const Notas = ({ titulo, texto, clases, esMensual }) => {
     const { mes, año, currentFecha } = useContext(DataContext);
-    const { cargarDatosStorage, guardarDatoStorage } = useContext(FireContext);
+    const { cargarDatosStorage, guardarDatoStorage, uid } = useContext(FireContext);
 
     const [content, setContent] = useState('');
     const [initialContent, setInitialContent] = useState('');  // Estado para el contenido inicial
@@ -29,7 +29,7 @@ const Notas = ({ titulo, texto, clases, esMensual }) => {
     useEffect(() => {
         const fetchData = async () => {
             if (esMensual) {
-                const storedData = await cargarDatosStorage(`${titulo}-${año}`);
+                const storedData = await cargarDatosStorage(`${titulo}-${año}`, uid);
                 let storedArray = Array(12).fill(null);
 
                 if (storedData && isJSON(storedData)) {
@@ -48,7 +48,7 @@ const Notas = ({ titulo, texto, clases, esMensual }) => {
                     setFecha('');
                 }
             } else {
-                const storedData = await cargarDatosStorage(titulo);
+                const storedData = await cargarDatosStorage(titulo, uid);
                 if (storedData && isJSON(storedData)) {
                     const { content: savedContent, fecha: savedFecha } = JSON.parse(storedData);
                     setContent(savedContent || '');
@@ -140,11 +140,6 @@ const Notas = ({ titulo, texto, clases, esMensual }) => {
                 value={content}
                 onChange={(e) => setContent(e.target.value)}  // Actualiza el estado
             ></textarea>
-            {fecha !== null && fecha !== undefined && fecha.trim() !== "" && (
-                <p className='fechaGuardado'>
-                    {guardado ? `Guardado el: ${fecha}` : "Guardando..."}
-                </p>
-            )}
         </div>
     );
 };

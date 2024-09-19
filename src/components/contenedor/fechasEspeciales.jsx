@@ -5,7 +5,7 @@ import { FireContext } from '../../context/fireContext';
 
 const FechasEspeciales = () => {
     const { currentFecha } = useContext(DataContext);
-    const { cargarDatosStorage, guardarDatoStorage } = useContext(FireContext);
+    const { cargarDatosStorage, guardarDatoStorage, uid } = useContext(FireContext);
 
     const [calendario, setCalendario] = useState(arrayFechas());
     const [newDateLabel, setNewDateLabel] = useState('');
@@ -26,7 +26,7 @@ const FechasEspeciales = () => {
     // Cargar datos del localStorage
     const loadFromLocalStorage = async () => {
         try {
-            const savedData = await cargarDatosStorage('FechasEspeciales');
+            const savedData = await cargarDatosStorage('FechasEspeciales', uid);
             if (savedData) {
                 return JSON.parse(savedData)
             } else {

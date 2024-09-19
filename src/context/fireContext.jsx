@@ -2,120 +2,186 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { auth, db } from '../services/firebaseConfig'; // Asegúrate de tener esta configuración
 import { onAuthStateChanged } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
-import { doc, getDoc, setDoc, collection } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { DataContext } from "./dateContext";
 
 export const FireContext = createContext({});
 
+// eslint-disable-next-line react/prop-types
 export const FireProvider = ({ children }) => {
     const { mes, año } = useContext(DataContext);
 
     const navigate = useNavigate();
-    const [loading, setLoading] = useState(true);
-    const [uid, setUid] = useState(true);
+    const [loading, setLoading] = useState(false);
+    const [logueado, setLogueado] = useState(true);
+    const [localMasActualizada, setLocalMasActualizada] = useState(false);
 
+    const [uid, setUid] = useState(true);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (user) {
+                revisarSiExistePrincipalStorage(`Informe-${mes + 1}-${año}`, "Dependencias")
                 const uid = user.uid
-                /* comprobarDependencias("Dependencias", uid)
-                comprobarDependencias("config", uid)
-                comprobarDependencias("Notas", uid)
-                comprobarDependencias("FechasEspeciales", uid)
-                comprobarDependencias(`Broadcasting-${año}`, uid)
-                comprobarDependencias(`Gratitud-${año}`, uid)
-                comprobarDependencias(`Oraciones-${año}`, uid)
-                comprobarDependencias(`Gratitud-${año}`, uid)
-                comprobarDependencias(`Informe-${mes + 1}-${año}`, uid) */
-
-                /* comprobarDatos(uid); */ // Pasar el UID al llamar la función
                 setUid(uid)
+                /* subirUltimasActualizaciones(uid) */
+                console.log("seguir actualizando")
+                cargarArchivosInicioDependencia("Dependencias", uid)
+                cargarArchivosInicio(`Informe-${mes + 1}-${año}`, uid)
+                cargarArchivosInicio("Config", uid)
+                setLoading(true); //una vez cargados los tres primeros archivo carga el componente
+                revisarSincronizacion(uid)
                 navigate('/');
-                setLoading(true); // Cambia a false después de la navegación
+                cargarArchivosInicio("FechasEspeciales", uid)
+                cargarArchivosInicio("Notas", uid)
+                cargarArchivosInicio(`Broadcasting-${año}`, uid)
+                cargarArchivosInicio(`Gratitud-${año}`, uid)
+                cargarArchivosInicio(`Oraciones-${año}`, uid)
             } else {
+                localStorage.clear();
                 navigate('/iniciarSesion');
-                setLoading(false);
+                setLogueado(false)
             }
         });
         return () => unsubscribe();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    async function comprobarDependencias(titulo, uid) {
+    async function revisarSiExistePrincipalStorage(titulo, titulo2) {
+        const storedData = localStorage.getItem(titulo);
+        const storedData2 = localStorage.getItem(titulo2);
+
+        if (storedData && storedData2) {
+            setLoading(true);
+            navigate('/');
+            console.log("cargar pagina principal");
+
+        }
+    }
+
+    //revisa si existe el archivo principal Dependencias
+    async function cargarArchivosInicioDependencia(titulo, uid) {
         try {
             // Obtener el dato desde localStorage y verificar si existe
             const storedData = localStorage.getItem(titulo);
-            if (!storedData) {
+
+            if (storedData) {
+                return;
+            } else {
                 // Si no hay datos en localStorage, obtenerlos de Firestore
-                const dato = await obtenerDato(titulo, uid);
+                const dato = await obtenerDatoFirebase("Dependencias", uid);
 
                 if (dato) {
-                    // Guardar el dato en localStorage después de obtenerlo de Firestore
-                    // Verifica si 'dato' ya es una cadena JSON
-                    if (typeof dato === 'string') {
-                        localStorage.setItem(titulo, dato);
-                    } else {
-                        // Si 'dato' no es una cadena JSON, conviértelo a JSON y guárdalo
-                        localStorage.setItem(titulo, JSON.stringify(dato));
+                    guardaStorage(titulo, dato);
+                } else {
+                    console.log(`el dato no existe en firebase: ${titulo}`);
+                }
+            }
+        } catch (error) {
+            console.error(`Error al cargar archivo de inicio ${titulo}:`, error);
+        }
+    }
+    /* -----------------------------------------------------revisar--------------------------------------------------- */
+    //una vez obtenido o no el archivo principal revisa si existen otros archivo secundarios, en base al principal
+    async function cargarArchivosInicio(titulo, uid) {
+        try {
+            // Obtener el dato desde localStorage y verificar si existe
+            const storedData = localStorage.getItem(titulo);
+
+            if (storedData) {
+                console.log("ya existe el dato");
+                return
+            }
+
+            const dato = await obtenerDatoFirebase(titulo, uid);
+
+            if (dato) {
+                guardaStorage(titulo, dato);
+            } else {
+                console.log(`el dato no existe en firebase: ${titulo}`);
+            }
+
+        } catch (error) {
+            console.error(`Error al cargar archivo de inicio ${titulo}:`, error);
+        }
+    }
+
+    //carga un dato desde la storage y si no esta intenta cargarlo desde firebase
+    async function cargarDatosStorage(titulo, uid) {
+        try {
+            // Primero intentamos obtener el dato del localStorage
+            const savedData = localStorage.getItem(titulo);
+
+            //si el dato existe lo retorna y se detiene
+            if (savedData) {
+                return savedData;
+            }
+
+            // Si el dato no está en el localStorage, revisamos el archivo de dependencias
+            const dependencias = localStorage.getItem("Dependencias");
+
+            //si el archivo Dependencias existe
+            if (dependencias) {
+
+                // Convertimos dependencias a un objeto
+                const dependenciasObj = JSON.parse(dependencias);
+
+                // Verificamos si el archivo que buscamos está en alguna clave del archivo de dependencias
+                if (titulo in dependenciasObj) {
+                    //si lo esta, significa que exite en la base de datos y lo busca
+                    const datos = await obtenerDatoFirebase(titulo, uid);
+
+                    //luego solo si el dato es valido lo guarda para futuras consultas y retorna el dato
+                    if (datos) {
+                        localStorage.setItem(titulo, datos);
+                        return datos
                     }
                 } else {
-                    console.error(`No se pudo obtener el dato "${titulo}" de Firestore.`);
-                }
-            }
-        } catch (error) {
-            console.error(`Error al comprobar o actualizar el dato "${titulo}":`, error);
-        }
-    }
-
-
-
-    async function comprobarDatos(uid) {
-        try {
-            // Obtener el objeto de actualizaciones pendientes
-            const ActualizacionPendiente = JSON.parse(localStorage.getItem("ActualizacionPendiente"));
-
-            // Si no hay actualizaciones pendientes, no hacer nada
-            if (!ActualizacionPendiente || Object.keys(ActualizacionPendiente).length === 0) {
-                return;
-            }
-
-            // Procesar cada clave (título) del objeto de actualizaciones pendientes
-            for (const titulo of Object.keys(ActualizacionPendiente)) {
-                // Obtener el dato del localStorage
-                const dato = localStorage.getItem(titulo);
-                if (dato) {
-                    // Subir el dato a la base de datos
-                    await subirDato(titulo, uid, dato);
-                } else {
-                    console.error(`No se encontró el dato para "${titulo}" en el localStorage.`);
+                    // Si el título no está en las dependencias, manejamos el caso
+                    console.log(`El título "${titulo}" no está en las dependencias.`);
                 }
             }
 
-            const dato = localStorage.getItem("Dependencias");
-            await subirDato("Dependencias", uid, dato);
-            // Una vez procesadas todas las actualizaciones, eliminar el archivo de actualizaciones
-            localStorage.removeItem("ActualizacionPendiente");
         } catch (error) {
-            // Si ocurre un error, imprimirlo en consola sin eliminar el archivo de actualizaciones
-            console.error('Error al procesar las actualizaciones:', error);
+            console.error('Error al obtener los datos:', error);
+        }
+    }
+
+    //guarda en el storage un dato, pero a la vez actualiza el archivo dependencias y lo agrega al archivo de actualizacion para en la proxima carga subirlo a firebase
+    function guardarDatoStorage(titulo, fecha, data) {
+        if (localMasActualizada) {
+            // 1. Obtener los objetos de dependencias y actualizaciones desde localStorage
+            const storedData = localStorage.getItem('Dependencias');
+            const actualizacionData = localStorage.getItem('ActualizacionPendiente');
+
+            // 2. Convertir los datos almacenados en objetos, o iniciar con un objeto vacío si no existen
+            const dependencias = storedData ? JSON.parse(storedData) : {};
+            const ActualizacionPendiente = actualizacionData ? JSON.parse(actualizacionData) : {};
+
+            // 3. Agregar o actualizar el título en ambos objetos con su respectiva fecha
+            dependencias[titulo] = fecha;
+            ActualizacionPendiente[titulo] = fecha;
+
+            // 4. Guardar ambos objetos actualizados en localStorage
+            localStorage.setItem(titulo, JSON.stringify(data));
+            localStorage.setItem('Dependencias', JSON.stringify(dependencias));
+            localStorage.setItem('ActualizacionPendiente', JSON.stringify(ActualizacionPendiente));
         }
     }
 
 
-    async function subirDato(titulo, uid, dato) {
-        try {
-            const docRef = doc(db, 'usuarios', uid);
-
-            await setDoc(docRef, {
-                [titulo]: dato
-            }, { merge: true });
-
-        } catch (error) {
-            console.error(`Error al actualizar el dato "${titulo}":`, error);
+    //funcion que guarda en el storage un dato, sin preocuoparse del tipo ya que ahi revisa si hace falta parsearlo o no
+    function guardaStorage(titulo, dato) {
+        if (typeof dato === 'string') {
+            localStorage.setItem(titulo, dato);
+        } else {
+            // Si 'dato' no es una cadena JSON, conviértelo a JSON y guárdalo
+            localStorage.setItem(titulo, JSON.stringify(dato));
         }
     }
 
-    async function obtenerDato(titulo, uid) {
+    //obtiene un dato desde fireBase y lo retorna si existe, se usa dentro de otras funciones
+    async function obtenerDatoFirebase(titulo, uid) {
         try {
             // Verifica que 'titulo' y 'uid' sean cadenas
             if (typeof titulo !== 'string' || typeof uid !== 'string') {
@@ -139,71 +205,95 @@ export const FireProvider = ({ children }) => {
 
             return data[titulo];
         } catch (error) {
-            console.error('Error al obtener los datos:', error);
+            console.error(`Error obtener en la base de datos el dato "${titulo}":`, error);
         }
     }
 
-    async function cargarDatosStorage(titulo) {
+    //sube las ultimas actualizaciones y compara la fecha de ultima actualizacion
+    async function subirUltimasActualizaciones(uid) {
         try {
-            // Primero intentamos obtener el dato del localStorage
-            const savedData = localStorage.getItem(titulo);
+            // Obtener el objeto de actualizaciones pendientes
+            const ActualizacionPendiente = JSON.parse(localStorage.getItem("ActualizacionPendiente"));
 
-            //si el dato existe lo retorna y se detiene
-            if (savedData) {
-                return savedData;
+            // Si no existe el archivo de actualizaciones en el storage significa que no hay actualizaciones pendientes
+            if (!ActualizacionPendiente) {
+                return;
             }
 
-            // Si el dato no está en el localStorage, revisamos el archivo de dependencias
-            const dependencias = localStorage.getItem("Dependencias");
-
-            //si el archivo Dependencias existe
-            if (dependencias) {
-
-                // Convertimos dependencias a un objeto
-                const dependenciasObj = JSON.parse(dependencias);
-
-                // Verificamos si el archivo que buscamos está en alguna clave del archivo de dependencias
-                if (titulo in dependenciasObj) {
-                    //si lo esta, significa que exite en la base de datos y lo busca
-                    const datos = await obtenerDato(titulo, uid);
-
-                    //luego solo si el dato es valido lo guarda para futuras consultas y retorna el dato
-                    if (datos) {
-                        localStorage.setItem(titulo, datos);
-                        return datos
-                    }
+            // Procesar cada clave (título) del objeto de actualizaciones pendientes, ya que la clave hace referencia al nombre para buscarlo
+            for (const titulo of Object.keys(ActualizacionPendiente)) {
+                // Obtener el dato del localStorage
+                const dato = localStorage.getItem(titulo);
+                if (dato) {
+                    // Subir el dato a la base de datos
+                    await subirDatoFirebase(titulo, uid, dato);
                 } else {
-                    // Si el título no está en las dependencias, manejamos el caso
-                    console.warn(`El título "${titulo}" no está en las dependencias.`);
+                    console.error(`datos faltantes, una actualizacion pendiente no logra encontrarse en el storage: ${titulo}`);
                 }
             }
 
+            const dato = localStorage.getItem("Dependencias");
+            await subirDatoFirebase("Dependencias", uid, dato);
+
+            // Una vez procesadas todas las actualizaciones, eliminar el archivo de actualizaciones
+            localStorage.removeItem("ActualizacionPendiente");
         } catch (error) {
-            console.error('Error al obtener los datos:', error);
+            // Si ocurre un error, imprimirlo en consola sin eliminar el archivo de actualizaciones
+            console.error('Error al procesar las actualizaciones:', error);
         }
     }
 
-    function guardarDatoStorage(titulo, fecha, data) {
-        // 1. Obtener los objetos de dependencias y actualizaciones desde localStorage
-        const storedData = localStorage.getItem('Dependencias');
-        const actualizacionData = localStorage.getItem('ActualizacionPendiente');
+    //sube un dato a firebase se usa dentro de otras funciones
+    async function subirDatoFirebase(titulo, uid, dato) {
+        try {
+            const docRef = doc(db, 'usuarios', uid);
 
-        // 2. Convertir los datos almacenados en objetos, o iniciar con un objeto vacío si no existen
-        const dependencias = storedData ? JSON.parse(storedData) : {};
-        const ActualizacionPendiente = actualizacionData ? JSON.parse(actualizacionData) : {};
+            await setDoc(docRef, {
+                [titulo]: dato
+            }, { merge: true });
 
-        // 3. Agregar o actualizar el título en ambos objetos con su respectiva fecha
-        dependencias[titulo] = fecha;
-        ActualizacionPendiente[titulo] = fecha;
+        } catch (error) {
+            console.error(`Error al actualizar el dato "${titulo}":`, error);
+        }
+    }
 
-        // 4. Guardar ambos objetos actualizados en localStorage
-        localStorage.setItem(titulo, JSON.stringify(data));
-        localStorage.setItem('Dependencias', JSON.stringify(dependencias));
-        localStorage.setItem('ActualizacionPendiente', JSON.stringify(ActualizacionPendiente));
-    };
+    async function revisarSincronizacion(uid) {
+        try {
+            // Obtener el objeto de actualizaciones pendientes
+            const config = JSON.parse(localStorage.getItem("config"));
+            if (!config || !config.ultimaActualizacion) {
+                // Si no hay configuración o última actualización local, consideramos los datos locales como los más actualizados
+                setLocalMasActualizada(true);
+                return;
+            }
+
+            const ultimaActualizacionLocal = config.ultimaActualizacion;
+
+            // Obtener la configuración externa desde Firebase
+            const configExterna = await obtenerDatoFirebase(config, uid);
+
+            if (configExterna && configExterna.ultimaActualizacion) {
+                const ultimaActualizacionExterna = configExterna.ultimaActualizacion;
+                const comparacion = ultimaActualizacionLocal > ultimaActualizacionExterna;
+
+                if (comparacion) {
+                    setLocalMasActualizada(true);
+                } else {
+                    setLocalMasActualizada(false);
+                    alert("Los datos están desactualizados");
+                }
+            } else {
+                // Si no hay datos externos, asumimos que los datos locales son los más actualizados
+                setLocalMasActualizada(true);
+            }
+        } catch (error) {
+            console.error('Error al revisar sincronización:', error);
+            setLocalMasActualizada(true); // Asumimos que los datos locales son más actualizados en caso de error
+        }
+    }
 
     return (
-        <FireContext.Provider value={{ loading, cargarDatosStorage, guardarDatoStorage, obtenerDato }}>
+        <FireContext.Provider value={{ loading, logueado, setLogueado, cargarDatosStorage, guardarDatoStorage, uid }}>
             {children}
         </FireContext.Provider>
     );

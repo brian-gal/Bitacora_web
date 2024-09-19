@@ -189,12 +189,6 @@ body {
     transition: background-color 0.3s;
 }
 
-
-.fechaGuardado {
-    margin: 0;
-    font-size: 12px;
-}
-
 /* ----------------------------------------------Fechas------------------------------------ */
 .container {
     display: flex;

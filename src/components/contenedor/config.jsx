@@ -6,19 +6,20 @@ import { FireContext } from "../../context/fireContext";
 
 const Config = () => {
     const { setMetaHorasPredi, metaHorasPredi, currentFecha } = useContext(DataContext);
-    const { cargarDatosStorage, guardarDatoStorage } = useContext(FireContext);
+    const { cargarDatosStorage, guardarDatoStorage, uid } = useContext(FireContext);
 
     const prevMetaHorasPrediRef = useRef(metaHorasPredi);
 
     //cargar datos del storage
     useEffect(() => {
         const fetchData = async () => {
-            const data = await cargarDatosStorage("Config");
+            const data = await cargarDatosStorage("Config", uid);
+
             if (data) {
                 const meta = JSON.parse(data)
-                setMetaHorasPredi(meta.metaHorasPredi)
-            } else {
-                setMetaHorasPredi(10)
+                if (meta.metaHorasPredi) {
+                    setMetaHorasPredi(meta.metaHorasPredi)
+                }
             }
         };
 
@@ -26,17 +27,23 @@ const Config = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    //guardar nueva configuracion
     useEffect(() => {
         if (prevMetaHorasPrediRef.current !== metaHorasPredi) {
-            const updatedConfig = { metaHorasPredi: metaHorasPredi };
+            // Obtener la configuración actual desde localStorage
+            const existingConfig = JSON.parse(localStorage.getItem('Config')) || {};
 
+            // Actualizar solo la clave metaHorasPredi, preservando las otras claves
+            const updatedConfig = { ...existingConfig, metaHorasPredi: metaHorasPredi };
+
+            // Guardar la configuración actualizada
             guardarDatoStorage('Config', currentFecha, updatedConfig);
+
             // Actualiza el valor anterior
             prevMetaHorasPrediRef.current = metaHorasPredi;
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [metaHorasPredi]);
+
 
     const handleHorasChange = (e) => {
         setMetaHorasPredi(e.target.value);
