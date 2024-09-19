@@ -4,7 +4,8 @@ import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { DataContext } from "./dateContext";
-
+import { convertirAJson, convertirAObjeto, verificarYLimpiarStorage } from "../components/utilidades/funciones";
+import Swal from 'sweetalert2'
 export const FireContext = createContext({});
 
 // eslint-disable-next-line react/prop-types
@@ -14,15 +15,13 @@ export const FireProvider = ({ children }) => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [logueado, setLogueado] = useState(true);
-
-    /* ...................corregir................... */
     const [localMasActualizada, setLocalMasActualizada] = useState(false);
-
     const [uid, setUid] = useState(true);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (user) {
+                verificarYLimpiarStorage();
                 revisarSiExistePrincipalStorage(`Informe-${mes + 1}-${año}`, "Dependencias")
                 const uid = user.uid
                 setUid(uid)
@@ -88,7 +87,6 @@ export const FireProvider = ({ children }) => {
             const storedData = localStorage.getItem(titulo);
 
             if (storedData) {
-                console.log("ya existe el dato");
                 return
             }
 
@@ -101,8 +99,8 @@ export const FireProvider = ({ children }) => {
                 if (titulo == `Informe-${mes + 1}-${año}`) {
                     const storedData = dato;
 
-                    if (storedData && isJSON(storedData)) {
-                        const parsedData = JSON.parse(storedData);
+                    if (storedData) {
+                        const parsedData = convertirAObjeto(storedData);
                         setDatos(parsedData);
                     } else {
                         // Si no hay datos en el localStorage, reiniciar el estado con días vacíos
@@ -114,7 +112,7 @@ export const FireProvider = ({ children }) => {
                 if (titulo == `Config`) {
                     const data = dato;
                     if (data) {
-                        const meta = JSON.parse(data)
+                        const meta = convertirAObjeto(data)
                         if (meta.metaHorasPredi) {
                             setMetaHorasPredi(meta.metaHorasPredi)
                         }
@@ -139,7 +137,7 @@ export const FireProvider = ({ children }) => {
 
             //si el dato existe lo retorna y se detiene
             if (savedData) {
-                return savedData;
+                return convertirAObjeto(savedData);
             }
 
             // Si el dato no está en el localStorage, revisamos el archivo de dependencias
@@ -149,7 +147,7 @@ export const FireProvider = ({ children }) => {
             if (dependencias) {
 
                 // Convertimos dependencias a un objeto
-                const dependenciasObj = JSON.parse(dependencias);
+                const dependenciasObj = convertirAObjeto(dependencias);
 
                 // Verificamos si el archivo que buscamos está en alguna clave del archivo de dependencias
                 if (titulo in dependenciasObj) {
@@ -158,7 +156,7 @@ export const FireProvider = ({ children }) => {
 
                     //luego solo si el dato es valido lo guarda para futuras consultas y retorna el dato
                     if (datosObtenidos) {
-                        localStorage.setItem(titulo, datos);
+                        localStorage.setItem(titulo, convertirAJson(datosObtenidos));
                         return datosObtenidos
                     }
                 } else {
@@ -180,29 +178,26 @@ export const FireProvider = ({ children }) => {
             const actualizacionData = localStorage.getItem('ActualizacionPendiente');
 
             // 2. Convertir los datos almacenados en objetos, o iniciar con un objeto vacío si no existen
-            const dependencias = storedData ? JSON.parse(storedData) : {};
-            const ActualizacionPendiente = actualizacionData ? JSON.parse(actualizacionData) : {};
+            const dependencias = storedData ? convertirAObjeto(storedData) : {};
+            const ActualizacionPendiente = actualizacionData ? convertirAObjeto(actualizacionData) : {};
 
             // 3. Agregar o actualizar el título en ambos objetos con su respectiva fecha
             dependencias[titulo] = fecha;
             ActualizacionPendiente[titulo] = fecha;
 
             // 4. Guardar ambos objetos actualizados en localStorage
-            localStorage.setItem(titulo, JSON.stringify(data));
-            localStorage.setItem('Dependencias', JSON.stringify(dependencias));
-            localStorage.setItem('ActualizacionPendiente', JSON.stringify(ActualizacionPendiente));
+            localStorage.setItem(titulo, convertirAJson(data));
+            localStorage.setItem('Dependencias', convertirAJson(dependencias));
+            localStorage.setItem('ActualizacionPendiente', convertirAJson(ActualizacionPendiente));
+            localStorage.setItem('ultimaActualizacion', convertirAJson(fecha));
+
         }
     }
 
 
     //funcion que guarda en el storage un dato, sin preocuoparse del tipo ya que ahi revisa si hace falta parsearlo o no
     function guardaStorage(titulo, dato) {
-        if (typeof dato === 'string') {
-            localStorage.setItem(titulo, dato);
-        } else {
-            // Si 'dato' no es una cadena JSON, conviértelo a JSON y guárdalo
-            localStorage.setItem(titulo, JSON.stringify(dato));
-        }
+        localStorage.setItem(titulo, convertirAJson(dato));
     }
 
     //obtiene un dato desde fireBase y lo retorna si existe, se usa dentro de otras funciones
@@ -221,7 +216,7 @@ export const FireProvider = ({ children }) => {
                 return;
             }
 
-            const data = docSnap.data();
+            const data = convertirAObjeto(docSnap.data());
 
             // Verifica si 'titulo' está en los datos del documento
             if (!(titulo in data)) {
@@ -238,7 +233,7 @@ export const FireProvider = ({ children }) => {
     async function subirUltimasActualizaciones(uid) {
         try {
             // Obtener el objeto de actualizaciones pendientes
-            const ActualizacionPendiente = JSON.parse(localStorage.getItem("ActualizacionPendiente"));
+            const ActualizacionPendiente = convertirAObjeto(localStorage.getItem("ActualizacionPendiente"));
 
             // Si no existe el archivo de actualizaciones en el storage significa que no hay actualizaciones pendientes
             if (!ActualizacionPendiente) {
@@ -248,7 +243,7 @@ export const FireProvider = ({ children }) => {
             // Procesar cada clave (título) del objeto de actualizaciones pendientes, ya que la clave hace referencia al nombre para buscarlo
             for (const titulo of Object.keys(ActualizacionPendiente)) {
                 // Obtener el dato del localStorage
-                const dato = localStorage.getItem(titulo);
+                const dato = convertirAObjeto(localStorage.getItem(titulo));
                 if (dato) {
                     // Subir el dato a la base de datos
                     await subirDatoFirebase(titulo, uid, dato);
@@ -258,6 +253,8 @@ export const FireProvider = ({ children }) => {
             }
 
             const dato = localStorage.getItem("Dependencias");
+            const ultimaActualizacion = localStorage.getItem("ultimaActualizacion");
+            await subirDatoFirebase("ultimaActualizacion", uid, ultimaActualizacion);
             await subirDatoFirebase("Dependencias", uid, dato);
 
             // Una vez procesadas todas las actualizaciones, eliminar el archivo de actualizaciones
@@ -272,7 +269,9 @@ export const FireProvider = ({ children }) => {
     async function subirDatoFirebase(titulo, uid, dato) {
         try {
             const docRef = doc(db, 'usuarios', uid);
-
+            if (!titulo == "ActualizacionPendiente") {
+                dato = convertirAObjeto(dato)
+            }
             await setDoc(docRef, {
                 [titulo]: dato
             }, { merge: true });
@@ -285,30 +284,16 @@ export const FireProvider = ({ children }) => {
     async function revisarSincronizacion(uid) {
         try {
             // Obtener el objeto de actualizaciones pendientes
-            const config = JSON.parse(localStorage.getItem("Config"));
-            console.log("Config local obtenida:", config);
-
-            if (!config || !config.ultimaActualizacion) {
-                // Si no hay configuración o última actualización local, consideramos los datos locales como los más actualizados
-                console.log("No hay config local o no tiene 'ultimaActualizacion'. Asumimos que los datos locales están actualizados.");
+            const ultimaActualizacionLocal = localStorage.getItem("ultimaActualizacion");
+            if (!ultimaActualizacionLocal) {
                 setLocalMasActualizada(true);
                 return;
             }
-
-            const ultimaActualizacionLocal = config.ultimaActualizacion;
-            console.log("Ultima actualización local:", ultimaActualizacionLocal);
-
             // Obtener la configuración externa desde Firebase
-            const configExterna = await obtenerDatoFirebase("Config", uid);
-            console.log("Config externa obtenida desde Firebase (sin parsear):", configExterna);
-
-            // Si configExterna es un string JSON, necesitarás hacer parse
-            const externalConfigParsed = typeof configExterna === 'string' ? JSON.parse(configExterna) : configExterna;
-            console.log("Config externa después de parsear si es necesario:", externalConfigParsed);
-
-            if (externalConfigParsed && externalConfigParsed.ultimaActualizacion) {
-                const ultimaActualizacionExterna = externalConfigParsed.ultimaActualizacion;
-                console.log("Ultima actualización externa:", ultimaActualizacionExterna);
+            const ultimaExterna = await obtenerDatoFirebase("ultimaActualizacion", uid);
+            // Si configExterna es un string JSON, necesitarás hacer 
+            if (ultimaExterna) {
+                const ultimaActualizacionExterna = ultimaExterna;
 
                 const comparacion = ultimaActualizacionLocal >= ultimaActualizacionExterna;
                 console.log("Comparación de fechas (local >= externa):", comparacion);
@@ -318,9 +303,28 @@ export const FireProvider = ({ children }) => {
                     setLocalMasActualizada(true);
                 } else {
                     console.log("Datos locales están desactualizados.");
-
                     setLocalMasActualizada(false);
-                    alert("Los datos están desactualizados");
+
+                    let timerInterval;
+                    Swal.fire({
+                        title: "Auto cierre de sesion activado!",
+                        html: "Los datos se encuentran desactualizados, vuelva a iniciar sesion para sincronizarlos. cierre en <b></b> segundos.",
+                        timer: 5000,
+                        timerProgressBar: true,
+                        didOpen: () => {
+                            Swal.showLoading();
+                            const timer = Swal.getPopup().querySelector("b");
+                            timerInterval = setInterval(() => {
+                                timer.textContent = `${Math.ceil(Swal.getTimerLeft() / 1000)}`; // Mostrar segundos redondeados
+                            }, 1000);
+                        },
+                        willClose: () => {
+                            clearInterval(timerInterval);
+                        }
+                    }).then((result) => {
+                        cerrarSesion()
+                    });
+
                     function cerrarSesion() {
                         const auth = getAuth();
                         signOut(auth).then(() => {
@@ -329,7 +333,7 @@ export const FireProvider = ({ children }) => {
                             console.log(error);
                         });
                     }
-                    cerrarSesion()
+
                 }
             } else {
                 // Si no hay datos externos, asumimos que los datos locales son los más actualizados
@@ -351,19 +355,11 @@ export const FireProvider = ({ children }) => {
         }));
     }
 
-    function isJSON(str) {
-        try {
-            JSON.parse(str);
-        } catch (e) {
-            console.error(e)
-            return false;
-        }
-        return true;
-    };
+
 
 
     return (
-        <FireContext.Provider value={{ loading, logueado, setLogueado, cargarDatosStorage, guardarDatoStorage, uid, datos, setDatos, isJSON, reiniciarValores }}>
+        <FireContext.Provider value={{ loading, logueado, setLogueado, cargarDatosStorage, guardarDatoStorage, uid, datos, setDatos, reiniciarValores }}>
             {children}
         </FireContext.Provider>
     );

@@ -2,14 +2,13 @@ import { useState, useEffect, useRef, useContext } from 'react';
 
 import { DataContext } from '../../context/dateContext';
 import { FireContext } from '../../context/fireContext';
+import { convertirAObjeto } from '../utilidades/funciones';
 
 const FechasEspeciales = () => {
     const { currentFecha } = useContext(DataContext);
     const { cargarDatosStorage, guardarDatoStorage, uid } = useContext(FireContext);
-
     const [calendario, setCalendario] = useState(arrayFechas());
     const [newDateLabel, setNewDateLabel] = useState('');
-
     const isInitialized = useRef(false);
 
     function arrayFechas() {
@@ -28,7 +27,7 @@ const FechasEspeciales = () => {
         try {
             const savedData = await cargarDatosStorage('FechasEspeciales', uid);
             if (savedData) {
-                return JSON.parse(savedData)
+                return convertirAObjeto(savedData)
             } else {
                 return [
                     { label: 'Asamblea de Circuito', date: '', fecha: '' },
@@ -38,7 +37,6 @@ const FechasEspeciales = () => {
                     { label: 'Conmemoración', date: '', fecha: '' },
                 ];
             }
-
         } catch (error) {
             console.error('Error loading data from localStorage:', error);
         }

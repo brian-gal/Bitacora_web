@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { getAuth, createUserWithEmailAndPassword, sendEmailVerification, signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { Link } from 'react-router-dom';
 import { FireContext } from "../../context/fireContext";
 import Swal from 'sweetalert2'

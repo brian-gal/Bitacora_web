@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useContext } from 'react';
 import { DataContext } from '../../context/dateContext';
 import { FireContext } from '../../context/fireContext';
+import { convertirAObjeto } from '../utilidades/funciones';
 
 // eslint-disable-next-line react/prop-types
 const Notas = ({ titulo, texto, clases, esMensual }) => {
@@ -9,21 +10,11 @@ const Notas = ({ titulo, texto, clases, esMensual }) => {
 
     const [content, setContent] = useState('');
     const [initialContent, setInitialContent] = useState('');  // Estado para el contenido inicial
-    const [fecha, setFecha] = useState('');
-    const [guardado, setguardado] = useState(false);
+    const [fecha, setFecha] = useState(''); //es clave para que guarde solo cuando hay un cambio
+    const [guardado, setguardado] = useState(false);  //es clave para que guarde solo cuando hay un cambio
 
     const timerGuardadoRef = useRef(null);
     const textareaRef = useRef(null);  // Referencia al textarea
-
-    const isJSON = (str) => {
-        try {
-            JSON.parse(str);
-        } catch (e) {
-            console.error(e)
-            return false;
-        }
-        return true;
-    };
 
     // Obtener los datos desde el storage
     useEffect(() => {
@@ -32,8 +23,8 @@ const Notas = ({ titulo, texto, clases, esMensual }) => {
                 const storedData = await cargarDatosStorage(`${titulo}-${año}`, uid);
                 let storedArray = Array(12).fill(null);
 
-                if (storedData && isJSON(storedData)) {
-                    storedArray = JSON.parse(storedData);
+                if (storedData) {
+                    storedArray = convertirAObjeto(storedData);
                 }
 
                 const savedData = storedArray[mes];
@@ -49,8 +40,8 @@ const Notas = ({ titulo, texto, clases, esMensual }) => {
                 }
             } else {
                 const storedData = await cargarDatosStorage(titulo, uid);
-                if (storedData && isJSON(storedData)) {
-                    const { content: savedContent, fecha: savedFecha } = JSON.parse(storedData);
+                if (storedData) {
+                    const { content: savedContent, fecha: savedFecha } = convertirAObjeto(storedData);
                     setContent(savedContent || '');
                     setInitialContent(savedContent || '');  // Guardar el contenido inicial
                     setFecha(savedFecha || '');
@@ -86,8 +77,8 @@ const Notas = ({ titulo, texto, clases, esMensual }) => {
             const storedData = localStorage.getItem(`${titulo}-${año}`);
             let storedArray = Array(12).fill(null);
 
-            if (storedData && isJSON(storedData)) {
-                storedArray = JSON.parse(storedData);
+            if (storedData) {
+                storedArray = convertirAObjeto(storedData);
             }
 
             const newEntry = {

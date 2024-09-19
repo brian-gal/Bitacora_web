@@ -1,26 +1,23 @@
 import { getAuth, signOut } from "firebase/auth";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef } from "react";
 
 import { DataContext } from "../../context/dateContext";
 import { FireContext } from "../../context/fireContext";
+import { convertirAObjeto } from "../utilidades/funciones";
 
 const Config = () => {
     const { currentFecha, metaHorasPredi, setMetaHorasPredi } = useContext(DataContext);
     const { guardarDatoStorage, } = useContext(FireContext);
-
     const prevMetaHorasPrediRef = useRef(metaHorasPredi);
 
     useEffect(() => {
         if (prevMetaHorasPrediRef.current !== metaHorasPredi) {
             // Obtener la configuración actual desde localStorage
-            const existingConfig = JSON.parse(localStorage.getItem('Config')) || {};
-
+            const existingConfig = convertirAObjeto(localStorage.getItem('Config')) || {};
             // Actualizar solo la clave metaHorasPredi, preservando las otras claves
             const updatedConfig = { ...existingConfig, metaHorasPredi: metaHorasPredi };
-
             // Guardar la configuración actualizada
             guardarDatoStorage('Config', currentFecha, updatedConfig);
-
             // Actualiza el valor anterior
             prevMetaHorasPrediRef.current = metaHorasPredi;
         }

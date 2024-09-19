@@ -2,27 +2,24 @@ import { useContext, useEffect } from "react";
 
 import { FireContext } from "../../context/fireContext";
 import { DataContext } from "../../context/dateContext";
+import { convertirAObjeto } from "../utilidades/funciones";
 
 const Informe = () => {
     const { dia, mes, año, currentFecha, setHorasPredi, horasPredi } = useContext(DataContext);
-    const { cargarDatosStorage, guardarDatoStorage, uid, datos, setDatos, isJSON, reiniciarValores } = useContext(FireContext);
+    const { cargarDatosStorage, guardarDatoStorage, uid, datos, setDatos, reiniciarValores } = useContext(FireContext);
 
     // Obtener los datos desde el storage
     useEffect(() => {
-
         async function cargarInforme() {
             const titulo = `Informe-${mes + 1}-${año}`;
             const storedData = await cargarDatosStorage(titulo, uid);
-
-            if (storedData && isJSON(storedData)) {
-                const parsedData = JSON.parse(storedData);
+            if (storedData) {
+                const parsedData = convertirAObjeto(storedData);
                 setDatos(parsedData);
             } else {
-                // Si no hay datos en el localStorage, reiniciar el estado con días vacíos
                 setDatos(reiniciarValores());
             }
         }
-
         cargarInforme()
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [mes, año]);
@@ -34,10 +31,8 @@ const Informe = () => {
             const updatedDatos = prevDatos.map(dato =>
                 dato.dia === day ? { ...dato, [field]: value } : dato
             );
-
             // Guardar en localStorage cuando se actualiza el estado
             const clave = `Informe-${mes + 1}-${año}`;
-
             guardarDatoStorage(clave, currentFecha, updatedDatos);
             return updatedDatos;
         });
@@ -50,9 +45,8 @@ const Informe = () => {
 
     const daysInMonth = new Date(año, mes + 1, 0).getDate();
 
-
+    // Calcular y guardar el total de horas cada vez que cambian los datos
     useEffect(() => {
-        // Calcular y guardar el total de horas cada vez que cambian los datos
         const totalHoras = datos.reduce((acc, cur) => acc + (parseFloat(cur.horas) || 0), 0);
         setHorasPredi(totalHoras);
         // eslint-disable-next-line react-hooks/exhaustive-deps

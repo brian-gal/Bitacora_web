@@ -1,6 +1,7 @@
 import { useContext, useEffect } from "react";
 import { DataContext } from "../../context/dateContext";
 import { FireContext } from "../../context/fireContext";
+import { convertirAObjeto } from "./funciones";
 
 const ProgressBar = () => {
     const { horasPredi, metaHorasPredi, setMetaHorasPredi } = useContext(DataContext);
@@ -12,7 +13,7 @@ const ProgressBar = () => {
             const data = await cargarDatosStorage("Config", uid);
 
             if (data) {
-                const meta = JSON.parse(data)
+                const meta = convertirAObjeto(data)
                 if (meta.metaHorasPredi) {
                     setMetaHorasPredi(meta.metaHorasPredi)
                 }
