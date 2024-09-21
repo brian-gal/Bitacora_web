@@ -7,7 +7,7 @@ import { convertirAObjeto } from "../utilidades/funciones";
 
 const Config = () => {
     const { currentFecha, metaHorasPredi, setMetaHorasPredi } = useContext(DataContext);
-    const { guardarDatoStorage, } = useContext(FireContext);
+    const { guardarDatoStorage, datosFirebaseGlobal } = useContext(FireContext);
     const prevMetaHorasPrediRef = useRef(metaHorasPredi);
 
     useEffect(() => {

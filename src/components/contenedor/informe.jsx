@@ -1,4 +1,4 @@
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 
 import { FireContext } from "../../context/fireContext";
 import { DataContext } from "../../context/dateContext";
@@ -6,13 +6,23 @@ import { convertirAObjeto } from "../utilidades/funciones";
 
 const Informe = () => {
     const { dia, mes, año, currentFecha, setHorasPredi, horasPredi } = useContext(DataContext);
-    const { cargarDatosStorage, guardarDatoStorage, uid, datos, setDatos, reiniciarValores } = useContext(FireContext);
+    const { cargarDatosStorage, guardarDatoStorage, datosFirebaseAño } = useContext(FireContext);
+    const [datos, setDatos] = useState(reiniciarValores());
+
+    function reiniciarValores() {
+        return Array.from({ length: new Date(año, mes + 1, 0).getDate() }, (_, i) => ({
+            dia: i + 1,
+            horas: "",
+            revisitas: "",
+            publicaciones: ""
+        }));
+    }
 
     // Obtener los datos desde el storage
     useEffect(() => {
         async function cargarInforme() {
             const titulo = `Informe-${mes + 1}-${año}`;
-            const storedData = await cargarDatosStorage(titulo, uid);
+            const storedData = await cargarDatosStorage(titulo);
             if (storedData) {
                 const parsedData = convertirAObjeto(storedData);
                 setDatos(parsedData);
@@ -22,7 +32,7 @@ const Informe = () => {
         }
         cargarInforme()
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [mes, año]);
+    }, [mes, año, datosFirebaseAño]);
 
 
     // Función para manejar el evento de cambio en los inputs

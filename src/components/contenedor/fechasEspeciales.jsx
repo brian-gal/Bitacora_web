@@ -6,7 +6,7 @@ import { convertirAObjeto } from '../utilidades/funciones';
 
 const FechasEspeciales = () => {
     const { currentFecha } = useContext(DataContext);
-    const { cargarDatosStorage, guardarDatoStorage, uid } = useContext(FireContext);
+    const { cargarDatosStorage, guardarDatoStorage, datosFirebaseGlobal } = useContext(FireContext);
     const [calendario, setCalendario] = useState(arrayFechas());
     const [newDateLabel, setNewDateLabel] = useState('');
     const isInitialized = useRef(false);
@@ -25,7 +25,7 @@ const FechasEspeciales = () => {
     // Cargar datos del localStorage
     const loadFromLocalStorage = async () => {
         try {
-            const savedData = await cargarDatosStorage('FechasEspeciales', uid);
+            const savedData = await cargarDatosStorage('FechasEspeciales');
             if (savedData) {
                 return convertirAObjeto(savedData)
             } else {
@@ -51,7 +51,7 @@ const FechasEspeciales = () => {
 
         fetchData();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [datosFirebaseGlobal]);
 
     // Guardar datos en localStorage
     const saveToLocalStorage = (dato) => {

@@ -5,12 +5,12 @@ import { convertirAObjeto } from "./funciones";
 
 const ProgressBar = () => {
     const { horasPredi, metaHorasPredi, setMetaHorasPredi } = useContext(DataContext);
-    const { cargarDatosStorage, uid } = useContext(FireContext);
+    const { cargarDatosStorage } = useContext(FireContext);
 
     //cargar datos del storage
     useEffect(() => {
         const fetchData = async () => {
-            const data = await cargarDatosStorage("Config", uid);
+            const data = await cargarDatosStorage("Config");
 
             if (data) {
                 const meta = convertirAObjeto(data)
@@ -19,7 +19,7 @@ const ProgressBar = () => {
                 }
             }
         };
-        console.log("probando");
+
 
         fetchData();
         // eslint-disable-next-line react-hooks/exhaustive-deps

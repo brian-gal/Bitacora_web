@@ -6,7 +6,7 @@ import { convertirAObjeto } from '../utilidades/funciones';
 // eslint-disable-next-line react/prop-types
 const Notas = ({ titulo, texto, clases, esMensual }) => {
     const { mes, año, currentFecha } = useContext(DataContext);
-    const { cargarDatosStorage, guardarDatoStorage, uid } = useContext(FireContext);
+    const { cargarDatosStorage, guardarDatoStorage, datosFirebaseAño, datosFirebaseGlobal } = useContext(FireContext);
 
     const [content, setContent] = useState('');
     const [initialContent, setInitialContent] = useState('');  // Estado para el contenido inicial
@@ -20,7 +20,7 @@ const Notas = ({ titulo, texto, clases, esMensual }) => {
     useEffect(() => {
         const fetchData = async () => {
             if (esMensual) {
-                const storedData = await cargarDatosStorage(`${titulo}-${año}`, uid);
+                const storedData = await cargarDatosStorage(`${titulo}-${año}`);
                 let storedArray = Array(12).fill(null);
 
                 if (storedData) {
@@ -39,7 +39,7 @@ const Notas = ({ titulo, texto, clases, esMensual }) => {
                     setFecha('');
                 }
             } else {
-                const storedData = await cargarDatosStorage(titulo, uid);
+                const storedData = await cargarDatosStorage(titulo);
                 if (storedData) {
                     const { content: savedContent, fecha: savedFecha } = convertirAObjeto(storedData);
                     setContent(savedContent || '');
@@ -54,7 +54,7 @@ const Notas = ({ titulo, texto, clases, esMensual }) => {
         };
         fetchData();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [mes, año]);
+    }, [mes, año, datosFirebaseGlobal, datosFirebaseAño]);
 
     // Guardar los datos en el storage
     useEffect(() => {

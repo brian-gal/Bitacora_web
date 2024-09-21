@@ -12,7 +12,7 @@ const PrivateRoute = ({ element: Component }) => {
     }
 
     //si estoy logueado y ya cargo entonces retorno el componente
-    if (loading && logueado) {
+    if (logueado) {
         return Component
     }
 
