@@ -44,7 +44,7 @@ export const FireProvider = ({ children }) => {
             }
         }
         cargarConfig()
-
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [datosFirebaseGlobal]);
 
     async function obtenerColeccionFirebase(uid) {
@@ -68,8 +68,10 @@ export const FireProvider = ({ children }) => {
                 });
                 console.log(documentosGlobal);
 
-                // Guardamos los datos globales en el estado
-                setDatosFirebaseGlobal(documentosGlobal);
+                // Solo guardamos los datos globales en el estado si no están vacíos
+                if (Object.keys(documentosGlobal).length > 0) {
+                    setDatosFirebaseGlobal(documentosGlobal);
+                }
             }
 
             // Si se proporciona un año, buscamos la colección correspondiente al año
@@ -80,7 +82,7 @@ export const FireProvider = ({ children }) => {
                 const yearSnapshot = await getDocs(yearCollectionRef);
 
                 if (yearSnapshot.empty) {
-                    console.error(`No se encontraron documentos en la colección para el año ${año}`);
+                    console.error(`No se encontraron documentos en la colección`);
                 }
 
                 // Almacenar los documentos del año en un objeto
@@ -90,8 +92,10 @@ export const FireProvider = ({ children }) => {
                 });
                 console.log(documentosAño);
 
-                // Guardamos los datos del año en el estado
-                setDatosFirebaseAño(documentosAño);
+                // Solo guardamos los datos del año en el estado si no están vacíos
+                if (Object.keys(documentosAño).length > 0) {
+                    setDatosFirebaseAño(documentosAño);
+                }
             }
 
         } catch (error) {
@@ -143,20 +147,18 @@ export const FireProvider = ({ children }) => {
 
     //guarda en el storage un dato y lo agrega al archivo de actualizacion para en la proxima carga subirlo a firebase
     function guardarDatoStorage(titulo, fecha, data) {
-        if (localMasActualizada) {
-            // 1. Obtener los objetos de dependencias y actualizaciones desde localStorage
-            const actualizacionData = localStorage.getItem('ActualizacionPendiente');
+        // 1. Obtener los objetos de dependencias y actualizaciones desde localStorage
+        const actualizacionData = localStorage.getItem('ActualizacionPendiente');
 
-            // 2. Convertir los datos almacenados en objetos, o iniciar con un objeto vacío si no existen
-            const ActualizacionPendiente = actualizacionData ? convertirAObjeto(actualizacionData) : {};
-            ActualizacionPendiente[titulo] = fecha;
-            const ultimaActualizacion = { fecha: fecha }
+        // 2. Convertir los datos almacenados en objetos, o iniciar con un objeto vacío si no existen
+        const ActualizacionPendiente = actualizacionData ? convertirAObjeto(actualizacionData) : {};
+        ActualizacionPendiente[titulo] = fecha;
+        const ultimaActualizacion = { fecha: fecha }
 
-            // 5. Guardar ambos objetos actualizados en localStorage
-            localStorage.setItem(titulo, convertirAJson(data));
-            localStorage.setItem('ActualizacionPendiente', convertirAJson(ActualizacionPendiente));
-            localStorage.setItem('ultimaActualizacion', convertirAJson(ultimaActualizacion));
-        }
+        // 5. Guardar ambos objetos actualizados en localStorage
+        localStorage.setItem(titulo, convertirAJson(data));
+        localStorage.setItem('ActualizacionPendiente', convertirAJson(ActualizacionPendiente));
+        localStorage.setItem('ultimaActualizacion', convertirAJson(ultimaActualizacion));
     }
 
     //sube las ultimas actualizaciones y compara la fecha de ultima actualizacion
