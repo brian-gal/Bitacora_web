@@ -24,7 +24,7 @@ export const FireProvider = ({ children }) => {
                 revisarDatosPrincipales()
                 const uid = user.uid
                 subirUltimasActualizaciones(uid)
-                obtenerColeccionFirebase(año, uid)
+                obtenerColeccionFirebase(uid)
                 navigate('/');
             } else {
                 localStorage.clear();
@@ -36,7 +36,16 @@ export const FireProvider = ({ children }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    async function obtenerColeccionFirebase(año, uid) {
+    useEffect(() => {
+        async function cargarConfig() {
+            const datosConfig = await cargarDatosStorage("Config")
+            setMetaHorasPredi(datosConfig.metaHorasPredi)
+        }
+        cargarConfig()
+        
+    }, [datosFirebaseGlobal]);
+
+    async function obtenerColeccionFirebase(uid) {
         try {
             // Verificamos si los datos globales ya están cargados
             if (datosFirebaseGlobal) {
@@ -55,14 +64,17 @@ export const FireProvider = ({ children }) => {
                 globalSnapshot.forEach((doc) => {
                     documentosGlobal[doc.id] = convertirAObjeto(doc.data());
                 });
+                console.log(documentosGlobal);
 
                 // Guardamos los datos globales en el estado
                 setDatosFirebaseGlobal(documentosGlobal);
             }
 
             // Si se proporciona un año, buscamos la colección correspondiente al año
-            if (año) {
-                const yearCollectionRef = collection(db, 'usuarios', uid, año.toString());
+            if (datosFirebaseAño) {
+                console.log('Usando datos del estado global:', datosFirebaseGlobal);
+            } else {
+                const yearCollectionRef = collection(db, 'usuarios', uid, 'PorAño');
                 const yearSnapshot = await getDocs(yearCollectionRef);
 
                 if (yearSnapshot.empty) {
@@ -74,6 +86,7 @@ export const FireProvider = ({ children }) => {
                 yearSnapshot.forEach((doc) => {
                     documentosAño[doc.id] = convertirAObjeto(doc.data());
                 });
+                 console.log(documentosAño);
 
                 // Guardamos los datos del año en el estado
                 setDatosFirebaseAño(documentosAño);
@@ -97,29 +110,32 @@ export const FireProvider = ({ children }) => {
             }
 
             const nombre = obtenerTituloYAño(titulo).titulo
-            const año = obtenerTituloYAño(titulo).año
 
             const date = new Date();
             const mesActual = date.getMonth()
             const añoActual = date.getFullYear()
 
-            if (año && datosFirebaseAño) {
+            if (datosFirebaseAño) {
                 if (datosFirebaseAño[nombre] && datosFirebaseAño[nombre][titulo]) {
                     const datos = datosFirebaseAño[nombre][titulo];
                     if (mesActual == mes && añoActual == año) {
                         localStorage.setItem(titulo, convertirAJson(datos));
                     }
+                    console.log(datos);
+                    
                     return datos
-                }
+                }             
             }
 
             if (datosFirebaseGlobal) {
                 if (datosFirebaseGlobal[nombre] && datosFirebaseGlobal[nombre][titulo]) {
                     const datos = datosFirebaseGlobal[nombre][titulo];
                     localStorage.setItem(titulo, convertirAJson(datos));
+                    console.log(datos);
+
                     return datos
                 }
-            }
+            } 
         } catch (error) {
             console.error('Error al obtener los datos:', error);
         }
@@ -180,7 +196,7 @@ export const FireProvider = ({ children }) => {
             const collection = obtenerTituloYAño(titulo);
             const año = collection.año
             const nombre = collection.titulo
-            const collectionName = año ? año.toString() : 'Global';
+            const collectionName = año ? 'PorAño' : 'Global';
             const docRef = doc(db, 'usuarios', uid, collectionName, nombre);
             await setDoc(docRef, {
                 [titulo]: dato
