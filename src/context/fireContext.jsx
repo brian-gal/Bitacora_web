@@ -14,18 +14,18 @@ export const FireProvider = ({ children }) => {
     const navigate = useNavigate();
     const [logueado, setLogueado] = useState(true);
     const [localMasActualizada, setLocalMasActualizada] = useState(true);
-
+    const [loading, setLoading] = useState(true);
     const [datosFirebaseGlobal, setDatosFirebaseGlobal] = useState(null);
     const [datosFirebaseAño, setDatosFirebaseAño] = useState(null);
+
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (user) {
-                revisarDatosPrincipales()
+                navigate('/');
                 const uid = user.uid
                 subirUltimasActualizaciones(uid)
                 obtenerColeccionFirebase(uid)
-                navigate('/');
             } else {
                 localStorage.clear();
                 navigate('/iniciarSesion');
@@ -39,10 +39,12 @@ export const FireProvider = ({ children }) => {
     useEffect(() => {
         async function cargarConfig() {
             const datosConfig = await cargarDatosStorage("Config")
-            setMetaHorasPredi(datosConfig.metaHorasPredi)
+            if (datosConfig && datosConfig.metaHorasPredi) {
+                setMetaHorasPredi(datosConfig.metaHorasPredi)
+            }
         }
         cargarConfig()
-        
+
     }, [datosFirebaseGlobal]);
 
     async function obtenerColeccionFirebase(uid) {
@@ -86,7 +88,7 @@ export const FireProvider = ({ children }) => {
                 yearSnapshot.forEach((doc) => {
                     documentosAño[doc.id] = convertirAObjeto(doc.data());
                 });
-                 console.log(documentosAño);
+                console.log(documentosAño);
 
                 // Guardamos los datos del año en el estado
                 setDatosFirebaseAño(documentosAño);
@@ -100,42 +102,40 @@ export const FireProvider = ({ children }) => {
     //carga un dato desde la storage y si no esta intenta cargarlo desde firebase
     async function cargarDatosStorage(titulo) {
         try {
-
+            setLoading(true)
             // Primero intentamos obtener el dato del localStorage
             const savedData = localStorage.getItem(titulo);
 
             //si el dato existe lo retorna y se detiene
             if (savedData) {
+                setLoading(false)
                 return convertirAObjeto(savedData);
             }
 
             const nombre = obtenerTituloYAño(titulo).titulo
-
             const date = new Date();
             const mesActual = date.getMonth()
             const añoActual = date.getFullYear()
 
             if (datosFirebaseAño) {
+                setLoading(false)
                 if (datosFirebaseAño[nombre] && datosFirebaseAño[nombre][titulo]) {
                     const datos = datosFirebaseAño[nombre][titulo];
                     if (mesActual == mes && añoActual == año) {
                         localStorage.setItem(titulo, convertirAJson(datos));
                     }
-                    console.log(datos);
-                    
                     return datos
-                }             
+                }
             }
 
             if (datosFirebaseGlobal) {
+                setLoading(false)
                 if (datosFirebaseGlobal[nombre] && datosFirebaseGlobal[nombre][titulo]) {
                     const datos = datosFirebaseGlobal[nombre][titulo];
                     localStorage.setItem(titulo, convertirAJson(datos));
-                    console.log(datos);
-
                     return datos
                 }
-            } 
+            }
         } catch (error) {
             console.error('Error al obtener los datos:', error);
         }
@@ -207,26 +207,8 @@ export const FireProvider = ({ children }) => {
         }
     }
 
-    async function revisarDatosPrincipales() {
-        const date = new Date();
-        const mes = date.getMonth();
-        const año = date.getFullYear();
-
-        // Obtener los datos del localStorage
-        const informe = localStorage.getItem(`Informe-${mes + 1}-${año}`);
-        const broadcasting = localStorage.getItem(`Broadcasting-${año}`);
-        const gratitud = localStorage.getItem(`Gratitud-${año}`);
-        const oraciones = localStorage.getItem(`Oraciones-${año}`);
-
-        // Verificar si todos los datos existen
-        if (informe && broadcasting && gratitud && oraciones) {
-            navigate('/');
-        }
-    }
-
-
     return (
-        <FireContext.Provider value={{ logueado, setLogueado, cargarDatosStorage, guardarDatoStorage, datosFirebaseGlobal, datosFirebaseAño }}>
+        <FireContext.Provider value={{ logueado, setLogueado, cargarDatosStorage, guardarDatoStorage, datosFirebaseGlobal, datosFirebaseAño, loading }}>
             {children}
         </FireContext.Provider>
     );

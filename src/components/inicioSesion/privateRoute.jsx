@@ -15,16 +15,6 @@ const PrivateRoute = ({ element: Component }) => {
     if (logueado) {
         return Component
     }
-
-    // si no cargo y estoy logueado carga pestaña de carga
-    if (loading === false || logueado === true) {
-        return (
-            <div className="d-flex justify-content-center">
-                <div className="spinner-border" style={{ width: '3rem', height: '3rem' }} role="status">
-                    <span className="visually-hidden">Loading...</span>
-                </div>
-            </div>);
-    }
 }
 
 export default PrivateRoute;

@@ -19,6 +19,7 @@ import CrearCuenta from './components/inicioSesion/crearCuenta';
 import PrivateRoute from './components/inicioSesion/privateRoute';
 
 import BotonScroll from './components/utilidades/botonScroll';
+import LoadingModal from './components/utilidades/loading.jsx';
 
 function App() {
     return (
@@ -39,6 +40,7 @@ function App() {
                         <BotonScroll />
                     </div>
                     <NavBar />
+                    <LoadingModal/>
                 </FireProvider>
             </DataProvider>
         </BrowserRouter>
