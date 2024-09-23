@@ -12,13 +12,13 @@ const LoadingModal = () => {
     useEffect(() => {
         let timeoutId;
 
-        if (loading && logueado && !desactivarBoton) {
+        if (loading && !desactivarBoton) {
             // Mostrar el modal inicial de "Cargando..."
             Swal.fire({
                 title: 'Cargando...',
                 html: `
                     <div class="d-flex justify-content-center">
-                        <div class="spinner-border" style="width: 3rem; height: 3rem;" role="status">
+                        <div class="spinner-border" style="width: 2rem; height: 2rem;" role="status">
                             <span class="visually-hidden">Loading...</span>
                         </div>
                     </div>
@@ -52,7 +52,7 @@ const LoadingModal = () => {
                         clearTimeout(timeoutId);
                     }
                 });
-            }, 5000); // Cambiar después de 10 segundos
+            }, 10000); // Cambiar después de 10 segundos
         } else {
             // Cerrar el modal cuando `loading` es false
             Swal.close();

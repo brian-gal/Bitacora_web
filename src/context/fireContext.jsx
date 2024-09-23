@@ -24,7 +24,9 @@ export const FireProvider = ({ children }) => {
                 navigate('/');
                 const uid = user.uid
                 subirUltimasActualizaciones(uid)
+                manejarSesion(uid)
                 obtenerColeccionFirebase(uid)
+
             } else {
                 localStorage.clear();
                 navigate('/iniciarSesion');
@@ -48,6 +50,17 @@ export const FireProvider = ({ children }) => {
 
     async function obtenerColeccionFirebase(uid) {
         try {
+            // Función para verificar la conectividad
+            function isOnline() {
+                return navigator.onLine;
+            }
+
+            if (!isOnline()) {
+                console.error('No tienes conexión a Internet.');
+                setLoading(true); // No seguir con la carga si no hay conexión
+                return;
+            }
+
             // Verificamos si los datos globales ya están cargados
             if (datosFirebaseGlobal) {
                 console.log('Usando datos del estado global:', datosFirebaseGlobal);
@@ -201,6 +214,50 @@ export const FireProvider = ({ children }) => {
         } catch (error) {
             console.error(`Error al subir el dato "${titulo}":`, error);
         }
+    }
+
+    async function manejarSesion(uid) {
+        // Obtener o generar el deviceId
+        let deviceId = localStorage.getItem('deviceId');
+
+        if (!deviceId) {
+            // Si no existe en localStorage, generamos uno nuevo
+            deviceId = generateRandomId();
+            localStorage.setItem('deviceId', deviceId);
+
+            // Guardamos este nuevo deviceId en Firebase sin hacer comparaciones
+            const docRef = doc(db, "usuarios", uid);
+            await setDoc(docRef, { deviceId }, { merge: true });
+
+            // Como es un nuevo deviceId, no necesitamos cerrar la sesión, ya que no hubo comparación.
+            return;
+        }
+
+        // Ahora, obtenemos el documento usuarios/{uid}
+        const docRef = doc(db, "usuarios", uid);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            const storedDeviceId = docSnap.data().deviceId;
+
+            // Si el ID en Firebase no coincide con el de localStorage, cerramos la sesión
+            if (storedDeviceId && storedDeviceId !== deviceId) {
+                alert('Ya has iniciado sesión en otro dispositivo.');
+                const auth = getAuth();
+                await signOut(auth);
+            } else {
+                // Si los IDs coinciden o es la primera vez, actualizamos el deviceId en Firebase
+                await setDoc(docRef, { deviceId }, { merge: true });
+            }
+        } else {
+            // Si el documento no existe, lo creamos con el deviceId
+            await setDoc(docRef, { deviceId });
+        }
+    }
+
+    // Función para generar un ID aleatorio de 20 dígitos
+    function generateRandomId() {
+        return Math.random().toString(36).substr(2, 20);
     }
 
     return (
