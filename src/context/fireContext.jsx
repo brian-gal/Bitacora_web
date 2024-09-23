@@ -13,7 +13,6 @@ export const FireProvider = ({ children }) => {
     const { mes, año, setMetaHorasPredi } = useContext(DataContext);
     const navigate = useNavigate();
     const [logueado, setLogueado] = useState(true);
-    const [localMasActualizada, setLocalMasActualizada] = useState(true);
     const [loading, setLoading] = useState(true);
     const [datosFirebaseGlobal, setDatosFirebaseGlobal] = useState(null);
     const [datosFirebaseAño, setDatosFirebaseAño] = useState(null);
@@ -68,10 +67,8 @@ export const FireProvider = ({ children }) => {
                 });
                 console.log(documentosGlobal);
 
-                // Solo guardamos los datos globales en el estado si no están vacíos
-                if (Object.keys(documentosGlobal).length > 0) {
-                    setDatosFirebaseGlobal(documentosGlobal);
-                }
+                setDatosFirebaseGlobal(documentosGlobal);
+
             }
 
             // Si se proporciona un año, buscamos la colección correspondiente al año
@@ -92,10 +89,7 @@ export const FireProvider = ({ children }) => {
                 });
                 console.log(documentosAño);
 
-                // Solo guardamos los datos del año en el estado si no están vacíos
-                if (Object.keys(documentosAño).length > 0) {
-                    setDatosFirebaseAño(documentosAño);
-                }
+                setDatosFirebaseAño(documentosAño);
             }
 
         } catch (error) {

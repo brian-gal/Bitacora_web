@@ -1,15 +1,18 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import Swal from 'sweetalert2';
 import { useContext } from 'react';
 import { FireContext } from '../../context/fireContext';
+import { DataContext } from '../../context/dateContext';
 
 const LoadingModal = () => {
-    const { loading } = useContext(FireContext);
+    const { loading, logueado } = useContext(FireContext);
+    const { currentLocation } = useContext(DataContext)
+    const desactivarBoton = currentLocation === "/iniciarSesion" || currentLocation === "/crearCuenta";
 
     useEffect(() => {
         let timeoutId;
 
-        if (loading) {
+        if (loading && logueado && !desactivarBoton) {
             // Mostrar el modal inicial de "Cargando..."
             Swal.fire({
                 title: 'Cargando...',

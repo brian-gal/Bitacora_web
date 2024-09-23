@@ -4,7 +4,7 @@ import { FireContext } from '../../context/fireContext';
 
 // eslint-disable-next-line react/prop-types
 const PrivateRoute = ({ element: Component }) => {
-    const { loading, logueado } = useContext(FireContext);
+    const { logueado } = useContext(FireContext);
 
     //si no estoy logueado retorna la pagina de inciar sesion
     if (!logueado) {
