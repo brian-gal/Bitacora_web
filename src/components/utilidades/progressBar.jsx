@@ -5,25 +5,19 @@ import { convertirAObjeto } from "./funciones";
 
 const ProgressBar = () => {
     const { horasPredi, metaHorasPredi, setMetaHorasPredi } = useContext(DataContext);
-    const { cargarDatosStorage } = useContext(FireContext);
+    const { cargarDatosStorage, datosFirebaseGlobal } = useContext(FireContext);
 
     //cargar datos del storage
     useEffect(() => {
-        const fetchData = async () => {
-            const data = await cargarDatosStorage("Config");
-
-            if (data) {
-                const meta = convertirAObjeto(data)
-                if (meta.metaHorasPredi) {
-                    setMetaHorasPredi(meta.metaHorasPredi)
-                }
+        async function cargarConfig() {
+            const datosConfig = await cargarDatosStorage("Config")
+            if (datosConfig && datosConfig.metaHorasPredi) {
+                setMetaHorasPredi(datosConfig.metaHorasPredi)
             }
-        };
-
-
-        fetchData();
+        }
+        cargarConfig()
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [datosFirebaseGlobal]);
 
     // Calcula el progreso en porcentaje
     const progreso = (horasPredi / metaHorasPredi) * 100;

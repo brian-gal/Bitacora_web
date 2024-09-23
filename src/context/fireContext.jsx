@@ -4,13 +4,13 @@ import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { collection, doc, getDoc, getDocs, setDoc } from "firebase/firestore";
 import { DataContext } from "./dateContext";
-import { convertirAJson, convertirAObjeto, obtenerTituloYAño, verificarYLimpiarStorage } from "../components/utilidades/funciones";
+import { convertirAJson, convertirAObjeto, obtenerTituloYAño } from "../components/utilidades/funciones";
 import Swal from 'sweetalert2'
 export const FireContext = createContext({});
 
 // eslint-disable-next-line react/prop-types
 export const FireProvider = ({ children }) => {
-    const { mes, año, setMetaHorasPredi } = useContext(DataContext);
+    const { mes, año } = useContext(DataContext);
     const navigate = useNavigate();
     const [logueado, setLogueado] = useState(true);
     const [loading, setLoading] = useState(true);
@@ -23,10 +23,8 @@ export const FireProvider = ({ children }) => {
             if (user) {
                 navigate('/');
                 const uid = user.uid
-                subirUltimasActualizaciones(uid)
                 manejarSesion(uid)
                 obtenerColeccionFirebase(uid)
-
             } else {
                 localStorage.clear();
                 navigate('/iniciarSesion');
@@ -36,17 +34,6 @@ export const FireProvider = ({ children }) => {
         return () => unsubscribe();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-
-    useEffect(() => {
-        async function cargarConfig() {
-            const datosConfig = await cargarDatosStorage("Config")
-            if (datosConfig && datosConfig.metaHorasPredi) {
-                setMetaHorasPredi(datosConfig.metaHorasPredi)
-            }
-        }
-        cargarConfig()
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [datosFirebaseGlobal]);
 
     async function obtenerColeccionFirebase(uid) {
         try {
@@ -221,15 +208,14 @@ export const FireProvider = ({ children }) => {
         let deviceId = localStorage.getItem('deviceId');
 
         if (!deviceId) {
-            // Si no existe en localStorage, generamos uno nuevo
+            localStorage.clear();
             deviceId = generateRandomId();
             localStorage.setItem('deviceId', deviceId);
-
-            // Guardamos este nuevo deviceId en Firebase sin hacer comparaciones
             const docRef = doc(db, "usuarios", uid);
             await setDoc(docRef, { deviceId }, { merge: true });
 
             // Como es un nuevo deviceId, no necesitamos cerrar la sesión, ya que no hubo comparación.
+            subirUltimasActualizaciones(uid)
             return;
         }
 
@@ -242,16 +228,23 @@ export const FireProvider = ({ children }) => {
 
             // Si el ID en Firebase no coincide con el de localStorage, cerramos la sesión
             if (storedDeviceId && storedDeviceId !== deviceId) {
-                alert('Ya has iniciado sesión en otro dispositivo.');
+                Swal.fire({
+                    title: "Sesión en otro dispositivo",
+                    text: "Tu cuenta está activa en otro dispositivo. Vuelve a iniciar sesión aquí para continuar.",
+                    icon: "warning",
+                    confirmButtonText: "Aceptar"
+                });
                 const auth = getAuth();
                 await signOut(auth);
             } else {
                 // Si los IDs coinciden o es la primera vez, actualizamos el deviceId en Firebase
                 await setDoc(docRef, { deviceId }, { merge: true });
+                subirUltimasActualizaciones(uid)
             }
         } else {
             // Si el documento no existe, lo creamos con el deviceId
             await setDoc(docRef, { deviceId });
+            subirUltimasActualizaciones(uid)
         }
     }
 
