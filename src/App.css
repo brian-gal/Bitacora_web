@@ -95,6 +95,13 @@ body {
     color: #333;
 }
 
+.icon-sincronizar {
+    position: absolute;
+    left: 10px;
+    color: #333;
+    cursor: pointer;
+}
+
 .menuFechaMes {
     width: 100%;
     gap: 15px;

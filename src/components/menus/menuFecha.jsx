@@ -12,10 +12,11 @@ const MenuFecha = () => {
     const mesSiguiente = mes < 11 ? meses[mes + 1] : meses[0]; // Mes siguiente (Enero si es Diciembre)
 
     const desactivarBoton = currentLocation === "/notas" || currentLocation === "/fechas" || currentLocation === "/config" || currentLocation === "/iniciarSesion" || currentLocation === "/crearCuenta";
-
+    const condicional = false
     return (
         <div className="containerMenuFecha">
             <div className="menuFecha">
+                {condicional ? <i className="bi bi-check-circle icon-sincronizar"></i> : <i className="bi bi-arrow-repeat icon-sincronizar" onClick={() => alert('Sincronización en progreso...')}></i>}
                 <div className="menuFechaMes">
                     <button onClick={retrocederMes} disabled={desactivarBoton}>{mesPrevio}</button>
                     <div onClick={fechaActual}>
