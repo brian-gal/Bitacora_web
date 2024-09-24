@@ -12,7 +12,7 @@ const LoadingModal = () => {
     useEffect(() => {
         let timeoutId;
 
-        if (loading && !desactivarBoton) {
+        if (loading && !desactivarBoton && logueado) {
             // Mostrar el modal inicial de "Cargando..."
             Swal.fire({
                 title: 'Cargando...',
@@ -60,7 +60,7 @@ const LoadingModal = () => {
 
         // Limpiar el temporizador si el componente se desmonta
         return () => clearTimeout(timeoutId);
-    }, [loading]);
+    }, [loading, logueado]);
 
     return null; // No necesita renderizar nada en el DOM
 };

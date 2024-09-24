@@ -7,7 +7,7 @@ import { convertirAObjeto } from "../utilidades/funciones";
 
 const Config = () => {
     const { currentFecha, metaHorasPredi, setMetaHorasPredi } = useContext(DataContext);
-    const { guardarDatoStorage, datosFirebaseGlobal } = useContext(FireContext);
+    const { guardarDatoStorage, datosFirebaseGlobal, activarSincronizacion } = useContext(FireContext);
     const prevMetaHorasPrediRef = useRef(metaHorasPredi);
 
     useEffect(() => {
@@ -44,6 +44,7 @@ const Config = () => {
                 <h2>Meta a cumplir</h2>
                 <label htmlFor="horasMeta">Horas de predicación al mes: {metaHorasPredi}</label>
                 <input
+                    disabled={!activarSincronizacion}
                     type="range"
                     id="horasMeta"
                     min="0"

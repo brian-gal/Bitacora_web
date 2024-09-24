@@ -6,7 +6,7 @@ import { convertirAObjeto } from "../utilidades/funciones";
 
 const Informe = () => {
     const { dia, mes, año, currentFecha, setHorasPredi, horasPredi } = useContext(DataContext);
-    const { cargarDatosStorage, guardarDatoStorage, datosFirebaseAño } = useContext(FireContext);
+    const { cargarDatosStorage, guardarDatoStorage, datosFirebaseAño, activarSincronizacion } = useContext(FireContext);
     const [datos, setDatos] = useState(reiniciarValores());
 
     function reiniciarValores() {
@@ -78,9 +78,9 @@ const Informe = () => {
                     {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => (
                         <tr key={day}>
                             <td id={day === dia ? `idInformeDia-${day}` : undefined} style={{ backgroundColor: day === dia ? 'lightblue' : 'transparent' }}>{day}</td>
-                            <td><input type="number" placeholder="Horas" value={datos.find(d => d.dia === day)?.horas || ""} onChange={handleInputChange(day, 'horas')} /></td>
-                            <td><input type="text" placeholder="Revisitas" value={datos.find(d => d.dia === day)?.revisitas || ""} onChange={handleInputChange(day, 'revisitas')} /></td>
-                            <td><input type="number" placeholder="Publicaciones" value={datos.find(d => d.dia === day)?.publicaciones || ""} onChange={handleInputChange(day, 'publicaciones')} /></td>
+                            <td><input disabled={!activarSincronizacion} type="number" placeholder="Horas" value={datos.find(d => d.dia === day)?.horas || ""} onChange={handleInputChange(day, 'horas')} /></td>
+                            <td><input disabled={!activarSincronizacion} type="text" placeholder="Revisitas" value={datos.find(d => d.dia === day)?.revisitas || ""} onChange={handleInputChange(day, 'revisitas')} /></td>
+                            <td><input disabled={!activarSincronizacion} type="number" placeholder="Publicaciones" value={datos.find(d => d.dia === day)?.publicaciones || ""} onChange={handleInputChange(day, 'publicaciones')} /></td>
                         </tr>
                     ))}
                 </tbody>

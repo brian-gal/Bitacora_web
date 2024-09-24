@@ -6,7 +6,7 @@ import { convertirAObjeto } from '../utilidades/funciones';
 // eslint-disable-next-line react/prop-types
 const Notas = ({ titulo, texto, clases, esMensual }) => {
     const { mes, año, currentFecha } = useContext(DataContext);
-    const { cargarDatosStorage, guardarDatoStorage, datosFirebaseAño, datosFirebaseGlobal } = useContext(FireContext);
+    const { cargarDatosStorage, guardarDatoStorage, datosFirebaseAño, datosFirebaseGlobal, activarSincronizacion } = useContext(FireContext);
 
     const [content, setContent] = useState('');
     const [initialContent, setInitialContent] = useState('');  // Estado para el contenido inicial
@@ -130,6 +130,7 @@ const Notas = ({ titulo, texto, clases, esMensual }) => {
                 placeholder={texto}
                 value={content}
                 onChange={(e) => setContent(e.target.value)}  // Actualiza el estado
+                disabled={!activarSincronizacion}  // Deshabilita si activarSincronizacion es false
             ></textarea>
         </div>
     );

@@ -6,7 +6,7 @@ import { convertirAObjeto } from '../utilidades/funciones';
 
 const FechasEspeciales = () => {
     const { currentFecha } = useContext(DataContext);
-    const { cargarDatosStorage, guardarDatoStorage, datosFirebaseGlobal } = useContext(FireContext);
+    const { cargarDatosStorage, guardarDatoStorage, datosFirebaseGlobal, activarSincronizacion } = useContext(FireContext);
     const [calendario, setCalendario] = useState(arrayFechas());
     const [newDateLabel, setNewDateLabel] = useState('');
     const isInitialized = useRef(false);
@@ -106,6 +106,7 @@ const FechasEspeciales = () => {
                         <p>{item.label}</p>
 
                         <input
+                            disabled={!activarSincronizacion}
                             type="date"
                             value={item.date}
                             onChange={(e) => handleDateChange(index, e.target.value)}
@@ -120,7 +121,7 @@ const FechasEspeciales = () => {
                 ))}
             </div>
 
-            <button type="button" className="btn btn-primary botonFechas" data-bs-toggle="modal" data-bs-target="#exampleModal">
+            <button disabled={!activarSincronizacion} type="button" className="btn btn-primary botonFechas" data-bs-toggle="modal" data-bs-target="#exampleModal">
                 Agregar Nueva Fecha
             </button>
 
@@ -146,8 +147,8 @@ const FechasEspeciales = () => {
                             </div>
                         </div>
                         <div className="modal-footer">
-                            <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                            <button type="button" className="btn btn-primary" onClick={handleAddDate}>Guardar Cambios</button>
+                            <button disabled={!activarSincronizacion} type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                            <button disabled={!activarSincronizacion} type="button" className="btn btn-primary" onClick={handleAddDate}>Guardar Cambios</button>
                         </div>
                     </div>
                 </div>
