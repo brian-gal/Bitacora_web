@@ -2,21 +2,38 @@ import { useContext } from "react"
 import { DataContext } from "../../context/dateContext"
 import { NavLink } from 'react-router-dom';
 import ProgressBar from "../utilidades/progressBar";
+import { FireContext } from "../../context/fireContext";
+import Swal from "sweetalert2";
 
 
 const MenuFecha = () => {
     const { fechaActual, meses, dia, mes, año, retrocederMes, avanzarMes, currentLocation } = useContext(DataContext)
+    const { subirUltimasActualizaciones, activarSincronizacion, uidd } = useContext(FireContext)
+
     const date = new Date();
     // Asegurarse de que los índices estén dentro del rango válido
     const mesPrevio = mes > 0 ? meses[mes - 1] : meses[11]; // Mes anterior (Diciembre si es Enero)
     const mesSiguiente = mes < 11 ? meses[mes + 1] : meses[0]; // Mes siguiente (Enero si es Diciembre)
 
     const desactivarBoton = currentLocation === "/notas" || currentLocation === "/fechas" || currentLocation === "/config" || currentLocation === "/iniciarSesion" || currentLocation === "/crearCuenta";
-    const condicional = false
+
+    const handleIconClick = () => {
+        const icon = document.getElementById("miIcono");
+        if (icon.classList.contains("bi-arrow-repeat")) {
+            subirUltimasActualizaciones(uidd); // Ejecutar si la clase es bi-arrow-repeat
+        } else {
+            Swal.fire({
+                title: "¡Datos guardados!",
+                icon: "success"
+            });
+        }
+    };
+    
+
     return (
         <div className="containerMenuFecha">
             <div className="menuFecha">
-                {condicional ? <i className="bi bi-check-circle icon-sincronizar"></i> : <i className="bi bi-arrow-repeat icon-sincronizar" onClick={() => alert('Sincronización en progreso...')}></i>}
+                <button className="icon-sincronizar rotate" disabled={!activarSincronizacion} id="miIconoB"><i className="bi bi-arrow-repeat" id="miIcono" onClick={handleIconClick}></i></button>
                 <div className="menuFechaMes">
                     <button onClick={retrocederMes} disabled={desactivarBoton}>{mesPrevio}</button>
                     <div onClick={fechaActual}>

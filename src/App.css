@@ -98,8 +98,19 @@ body {
 .icon-sincronizar {
     position: absolute;
     left: 10px;
-    color: #333;
+    border: none;
+}
+
+[type=button]:not(:disabled), [type=reset]:not(:disabled), [type=submit]:not(:disabled), button:not(:disabled) {
+    cursor: default
+}
+
+.bi-arrow-repeat {
     cursor: pointer;
+}
+
+.bi-check-circle {
+    cursor: default
 }
 
 .menuFechaMes {
@@ -140,6 +151,20 @@ body {
 .menuFechaAño i {
     cursor: pointer;
 }
+
+@keyframes rotate {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  .rotate {
+    animation: rotate 2s linear infinite;
+  }
+  
 
 /* -------------------------------------------notas---------------------------------------------- */
 .notas-container {

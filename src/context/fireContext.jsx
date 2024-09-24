@@ -16,13 +16,15 @@ export const FireProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
     const [datosFirebaseGlobal, setDatosFirebaseGlobal] = useState(null);
     const [datosFirebaseAño, setDatosFirebaseAño] = useState(null);
-
+    const [activarSincronizacion, setActivarSincronizacion] = useState(false);
+    const [uidd, setUidd] = useState(null);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (user) {
                 navigate('/');
                 const uid = user.uid
+                setUidd(uid)
                 manejarSesion(uid)
                 obtenerColeccionFirebase(uid)
             } else {
@@ -147,24 +149,36 @@ export const FireProvider = ({ children }) => {
         // 2. Convertir los datos almacenados en objetos, o iniciar con un objeto vacío si no existen
         const ActualizacionPendiente = actualizacionData ? convertirAObjeto(actualizacionData) : {};
         ActualizacionPendiente[titulo] = fecha;
-        const ultimaActualizacion = { fecha: fecha }
 
         // 5. Guardar ambos objetos actualizados en localStorage
         localStorage.setItem(titulo, convertirAJson(data));
         localStorage.setItem('ActualizacionPendiente', convertirAJson(ActualizacionPendiente));
-        localStorage.setItem('ultimaActualizacion', convertirAJson(ultimaActualizacion));
+
+        const icon = document.getElementById("miIcono");
+        icon.classList.remove("bi-check-circle");
+        icon.classList.add("bi-arrow-repeat");
     }
 
     //sube las ultimas actualizaciones y compara la fecha de ultima actualizacion
     async function subirUltimasActualizaciones(uid) {
+        const icon = document.getElementById("miIcono");
+        const iconb = document.getElementById("miIconoB");
+
         try {
+            setActivarSincronizacion(false)
+            iconb.classList.add("rotate");
+
+
             // Obtener el objeto de actualizaciones pendientes
             const ActualizacionPendiente = convertirAObjeto(localStorage.getItem("ActualizacionPendiente"));
 
             // Si no existe el archivo de actualizaciones en el storage significa que no hay actualizaciones pendientes
-            if (!ActualizacionPendiente) {
+            if (!ActualizacionPendiente) {;
+                icon.classList.remove("bi-arrow-repeat");
+                icon.classList.add("bi-check-circle");
                 return;
             }
+
 
             // Procesar cada clave (título) del objeto de actualizaciones pendientes, ya que la clave hace referencia al nombre para buscarlo
             for (const titulo of Object.keys(ActualizacionPendiente)) {
@@ -180,9 +194,15 @@ export const FireProvider = ({ children }) => {
 
             // Una vez procesadas todas las actualizaciones, eliminar el archivo de actualizaciones
             localStorage.removeItem("ActualizacionPendiente");
+            icon.classList.remove("bi-arrow-repeat");
+            icon.classList.add("bi-check-circle");
         } catch (error) {
-            // Si ocurre un error, imprimirlo en consola sin eliminar el archivo de actualizaciones
+            icon.classList.remove("bi-check-circle");
+            icon.classList.add("bi-arrow-repeat");
             console.error('Error al procesar las actualizaciones:', error);
+        } finally {
+            iconb.classList.remove("rotate");
+            setActivarSincronizacion(true)
         }
     }
 
@@ -254,7 +274,7 @@ export const FireProvider = ({ children }) => {
     }
 
     return (
-        <FireContext.Provider value={{ logueado, setLogueado, cargarDatosStorage, guardarDatoStorage, datosFirebaseGlobal, datosFirebaseAño, loading }}>
+        <FireContext.Provider value={{uidd, logueado, setLogueado, cargarDatosStorage, guardarDatoStorage, datosFirebaseGlobal, datosFirebaseAño, loading, subirUltimasActualizaciones, activarSincronizacion }}>
             {children}
         </FireContext.Provider>
     );
