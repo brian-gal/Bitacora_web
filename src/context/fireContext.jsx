@@ -33,6 +33,7 @@ export const FireProvider = ({ children }) => {
                 obtenerColeccionFirebase(uid)
             } else {
                 localStorage.clear();
+                setLoading(true)
                 navigate('/iniciarSesion');
                 setLogueado(false)
             }
