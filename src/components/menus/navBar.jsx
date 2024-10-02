@@ -24,14 +24,6 @@ const NavBar = () => {
                 <p>Fechas</p>
             </NavLink>
             <NavLink
-                to="/textos"
-                className={({ isActive }) => isActive ? "nav-Link active" : "nav-Link"}
-                onClick={fechaActual}
-            >
-                <i className="bi bi-book"></i>
-                <p>Notas</p>
-            </NavLink>
-            <NavLink
                 to="/enseñanzas"
                 className={({ isActive }) => isActive ? "nav-Link active" : "nav-Link"}
                 onClick={fechaActual}

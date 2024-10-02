@@ -20,22 +20,34 @@ const Notas = ({ titulo, texto, clases, esMensual }) => {
     useEffect(() => {
         const fetchData = async () => {
             if (esMensual) {
-                const storedData = await cargarDatosStorage(`${titulo}-${año}`);
-                let storedArray = Array(12).fill(null);
+                // Cargar los datos del localStorage
+                const storedData = await cargarDatosStorage(`Enseñanzas-${año}`);
 
                 if (storedData) {
-                    storedArray = convertirAObjeto(storedData);
-                }
+                    // Convertir a objeto
+                    const enseñanzas = convertirAObjeto(storedData);
 
-                const savedData = storedArray[mes];
+                    // Acceder a la categoría según el título (Broadcasting, Oraciones, Gratitud)
+                    const categoryData = enseñanzas[titulo];
 
-                if (savedData) {
-                    setContent(savedData.content || '');
-                    setInitialContent(savedData.content || '');  // Guardar el contenido inicial
-                    setFecha(savedData.fecha || '');
+                    // Si existe la categoría y el mes específico
+                    if (categoryData && categoryData[mes]) {
+                        const savedData = categoryData[mes]; // Datos guardados del mes
+
+                        // Establecer los valores si existen
+                        setContent(savedData.content || '');
+                        setInitialContent(savedData.content || ''); // Guardar el contenido inicial
+                        setFecha(savedData.fecha || '');
+                    } else {
+                        // Limpiar los valores si no hay datos
+                        setContent('');
+                        setInitialContent(''); // Limpiar el contenido inicial también
+                        setFecha('');
+                    }
                 } else {
+                    // Limpiar los valores si no hay datos guardados en el año
                     setContent('');
-                    setInitialContent('');  // Limpiar el contenido inicial también
+                    setInitialContent(''); // Limpiar el contenido inicial también
                     setFecha('');
                 }
             } else {
@@ -74,13 +86,23 @@ const Notas = ({ titulo, texto, clases, esMensual }) => {
         }
 
         if (esMensual) {
-            const storedData = localStorage.getItem(`${titulo}-${año}`);
-            let storedArray = Array(12).fill(null);
+            // Inicializar objeto enseñanzas
+            let enseñanzas;
+            const storedData = localStorage.getItem(`Enseñanzas-${año}`);
 
             if (storedData) {
-                storedArray = convertirAObjeto(storedData);
+                // Si existe, convertir a objeto
+                enseñanzas = JSON.parse(storedData);
+            } else {
+                // Si no existe, crear la estructura inicial
+                enseñanzas = {
+                    Broadcasting: {},
+                    Oraciones: {},
+                    Gratitud: {}
+                };
             }
 
+            // Crear el nuevo objeto de entrada
             const newEntry = {
                 content,
                 fecha: currentFecha,
@@ -88,9 +110,16 @@ const Notas = ({ titulo, texto, clases, esMensual }) => {
                 año
             };
 
-            storedArray[mes] = newEntry;
+            // Asegurarse de no sobrescribir los meses existentes
+            // Si la clave 'titulo' ya existe, mantener los meses existentes, y agregar el nuevo
+            enseñanzas[titulo] = {
+                ...enseñanzas[titulo], // Mantiene los meses ya existentes
+                [mes]: newEntry        // Agrega o actualiza el mes actual
+            };
 
-            guardarDatoStorage(`${titulo}-${año}`, currentFecha, storedArray)
+            // Guardar el objeto actualizado en localStorage
+            guardarDatoStorage(`Enseñanzas-${año}`, currentFecha, enseñanzas);
+
         } else {
             const data = { content, fecha: currentFecha };
 

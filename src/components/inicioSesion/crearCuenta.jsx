@@ -5,16 +5,11 @@ import { Link } from 'react-router-dom';
 
 const CrearCuenta = () => {
     const [registerEmail, setRegisterEmail] = useState("");
-    const [registerEmailConfirm, setRegisterEmailConfirm] = useState("");
     const [registerPassword, setRegisterPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
 
     //Crear cuenta
     const handleCreateAccount = async () => {
-        if (registerEmail !== registerEmailConfirm) {
-            alert("Los correos electrónicos no coinciden");
-            return;
-        }
 
         if (registerPassword !== confirmPassword) {
             alert("Las contraseñas no coinciden");
@@ -61,18 +56,6 @@ const CrearCuenta = () => {
                             className="form-input"
                             value={registerEmail}
                             onChange={(e) => setRegisterEmail(e.target.value)}
-                            required
-                        />
-                    </div>
-
-                    <div className="form-group">
-                        <label className="form-label" htmlFor="registerEmailConfirm">Confirmar Correo Electrónico</label>
-                        <input
-                            type="email"
-                            id="registerEmailConfirm"
-                            className="form-input"
-                            value={registerEmailConfirm}
-                            onChange={(e) => setRegisterEmailConfirm(e.target.value)}
                             required
                         />
                     </div>

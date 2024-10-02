@@ -21,13 +21,19 @@ const Informe = () => {
     // Obtener los datos desde el storage
     useEffect(() => {
         async function cargarInforme() {
-            const titulo = `Informe-${mes + 1}-${año}`;
-            const storedData = await cargarDatosStorage(titulo);
+            // Cambiar el nombre de la clave en localStorage para que busque por año
+            const storedData = await cargarDatosStorage(`Informe-${año}`);
+
             if (storedData) {
+                // Convertir el string en objeto
                 const parsedData = convertirAObjeto(storedData);
-                setDatos(parsedData);
+
+                // Asegurarse de que el mes exista en los datos cargados
+                const datosMes = parsedData[mes] || reiniciarValores(); // Si no hay datos para el mes, reiniciar valores
+
+                setDatos(datosMes); // Establecer los datos correspondientes al mes
             } else {
-                setDatos(reiniciarValores());
+                setDatos(reiniciarValores()); // Si no hay datos, reiniciar
             }
         }
         cargarInforme()
@@ -41,9 +47,18 @@ const Informe = () => {
             const updatedDatos = prevDatos.map(dato =>
                 dato.dia === day ? { ...dato, [field]: value } : dato
             );
+
+            // Obtener los datos anteriores del localStorage para no sobrescribir otros meses
+            const storedData = JSON.parse(localStorage.getItem(`Informe-${año}`)) || {}; // Asegurarse de convertir el string a objeto
+
+            // Asegurarse de no sobrescribir otros meses
+            const datos = {
+                ...storedData,       // Preserva los meses existentes
+                [mes]: updatedDatos  // Actualiza solo el mes actual
+            };
+
             // Guardar en localStorage cuando se actualiza el estado
-            const clave = `Informe-${mes + 1}-${año}`;
-            guardarDatoStorage(clave, currentFecha, updatedDatos);
+            guardarDatoStorage(`Informe-${año}`, currentFecha, datos);
             return updatedDatos;
         });
     };

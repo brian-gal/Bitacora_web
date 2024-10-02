@@ -35,41 +35,40 @@ export function verificarYLimpiarStorage() {
     }
 }
 
-/* export async function revisarSiExistePrincipalStorage(titulo, titulo2) {
+ export async function revisarSiExistePrincipalStorage(titulo) {
     const storedData = localStorage.getItem(titulo);
-    const storedData2 = localStorage.getItem(titulo2);
 
-    if (storedData && storedData2) {
+    if (storedData) {
         setLoading(true);
         navigate('/');
     }
-} */
+} 
 
-export function obtenerTituloYAño(titulo) {
-    // Detecta si tiene formato "Algo-Año" (por ejemplo, "Broadcasting-2024")
-    if (/^\w+-\d{4}$/.test(titulo)) {
-        const partes = titulo.split('-');
-        const tituloBase = partes[0]; // El título está en la primera parte
-        const año = parseInt(partes[1], 10); // El año está en la segunda parte
-        return { titulo: tituloBase, año: año };
+    export function obtenerTituloYAño(titulo) {
+        // Detecta si tiene formato "Algo-Año" (por ejemplo, "Enseñanzas-2024")
+        if (/^[A-Za-zÀ-ÿñÑ\s]+-\d{4}$/.test(titulo)) {
+            const partes = titulo.split('-');
+            const tituloBase = partes[0].trim(); // Elimina espacios en blanco
+            const año = parseInt(partes[1], 10);
+            return { titulo: tituloBase, año: año };
+        }
+    
+        // Detecta si tiene formato "Algo-Mes-Año" (por ejemplo, "Informe-9-2024")
+        if (/^[A-Za-zÀ-ÿñÑ\s]+-\d{1,2}-\d{4}$/.test(titulo)) {
+            const partes = titulo.split('-');
+            const tituloBase = partes[0].trim();
+            const mes = partes[1];
+            const año = parseInt(partes[2], 10);
+            return { titulo: tituloBase, año: año };
+        }
+    
+        // Detecta si es solo una palabra sin año
+        if (/^[A-Za-zÀ-ÿñÑ]+$/.test(titulo)) {
+            return { titulo: titulo, año: null };
+        }
+    
+        // Si no coincide con ningún formato conocido
+        return null;
     }
-
-    // Detecta si tiene formato "Algo-Mes-Año" (por ejemplo, "Informe-9-2024")
-    if (/^\w+-\d{1,2}-\d{4}$/.test(titulo)) {
-        const partes = titulo.split('-');
-        const tituloBase = partes[0]; // El título está en la primera parte
-        const mes = partes[1]; // El mes está en la segunda parte (aunque no se usa en este caso)
-        const año = parseInt(partes[2], 10); // El año está en la tercera parte
-        return { titulo: tituloBase, año: año };
-    }
-
-    // Detecta si es solo una palabra sin año, como "Notas"
-    if (/^\w+$/.test(titulo)) {
-        return { titulo: titulo, año: null }; // No hay año en este caso
-    }
-
-    // Si no coincide con ningún formato conocido
-    return null;
-}
 
 

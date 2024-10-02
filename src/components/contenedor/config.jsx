@@ -12,11 +12,8 @@ const Config = () => {
 
     useEffect(() => {
         if (prevMetaHorasPrediRef.current !== metaHorasPredi) {
-            // Obtener la configuración actual desde localStorage
             const existingConfig = convertirAObjeto(localStorage.getItem('Config')) || {};
-            // Actualizar solo la clave metaHorasPredi, preservando las otras claves
             const updatedConfig = { ...existingConfig, metaHorasPredi: metaHorasPredi };
-            // Guardar la configuración actualizada
             guardarDatoStorage('Config', currentFecha, updatedConfig);
             // Actualiza el valor anterior
             prevMetaHorasPrediRef.current = metaHorasPredi;

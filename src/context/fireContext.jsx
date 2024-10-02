@@ -13,7 +13,7 @@ export const FireProvider = ({ children }) => {
     const { mes, año, currentLocation, fechaActual } = useContext(DataContext);
     const navigate = useNavigate();
     const [logueado, setLogueado] = useState(true);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [datosFirebaseGlobal, setDatosFirebaseGlobal] = useState(null);
     const [datosFirebaseAño, setDatosFirebaseAño] = useState(null);
     const [activarSincronizacion, setActivarSincronizacion] = useState(true);
@@ -30,10 +30,9 @@ export const FireProvider = ({ children }) => {
                 const uid = user.uid
                 setUidd(uid)
                 manejarSesion(uid)
-
-
-                obtenerColeccionFirebase(uid)
-
+                setTimeout(() => {
+                    obtenerColeccionFirebase(uid)
+                }, 10000)
 
             } else {
                 localStorage.clear();
@@ -170,11 +169,10 @@ export const FireProvider = ({ children }) => {
 
             const nombre = obtenerTituloYAño(titulo).titulo
 
-
             if (datosFirebaseAño) {
                 if (datosFirebaseAño[nombre] && datosFirebaseAño[nombre][titulo]) {
                     const datos = datosFirebaseAño[nombre][titulo];
-                    if (mesActual == mes && añoActual == año) {
+                    if (añoActual == año) {
                         localStorage.setItem(titulo, convertirAJson(datos));
                     }
                     return datos
@@ -183,9 +181,15 @@ export const FireProvider = ({ children }) => {
 
             if (datosFirebaseGlobal) {
                 if (datosFirebaseGlobal[nombre] && datosFirebaseGlobal[nombre][titulo]) {
-                    const datos = datosFirebaseGlobal[nombre][titulo];
+                    let datos = datosFirebaseGlobal[nombre][titulo];
                     localStorage.setItem(titulo, convertirAJson(datos));
                     return datos
+                } else {
+                    if (titulo == "Config") {
+                        const datos = { metaHorasPredi: 10 }
+                        localStorage.setItem(titulo, convertirAJson(datos));
+                        return datos
+                    }
                 }
             }
 
