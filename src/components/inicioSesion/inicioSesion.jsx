@@ -3,10 +3,11 @@ import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { Link } from 'react-router-dom';
 import { FireContext } from "../../context/fireContext";
 import Swal from 'sweetalert2'
+import { useNavigate } from "react-router-dom";
 
 const InicioSesion = () => {
     const { setLogueado } = useContext(FireContext);
-
+    const navigate = useNavigate();
     const [loginEmail, setLoginEmail] = useState("");
     const [loginPassword, setLoginPassword] = useState("");
 
@@ -27,6 +28,7 @@ const InicioSesion = () => {
                 return;
             }
             setLogueado(true)
+            navigate('/');
             const Toast = Swal.mixin({
                 toast: true,
                 position: "center",
