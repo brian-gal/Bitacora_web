@@ -373,6 +373,7 @@ export const FireProvider = ({ children }) => {
                     icon: "warning",
                     confirmButtonText: "Aceptar"
                 });
+                Swal.close();
                 const auth = getAuth();
                 await signOut(auth);
             } else {
