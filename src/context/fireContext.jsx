@@ -30,10 +30,7 @@ export const FireProvider = ({ children }) => {
                 const uid = user.uid
                 setUidd(uid)
                 manejarSesion(uid)
-                setTimeout(() => {
-                    obtenerColeccionFirebase(uid)
-                }, 10000)
-
+                obtenerColeccionFirebase(uid)
             } else {
                 localStorage.clear();
                 navigate('/iniciarSesion');
