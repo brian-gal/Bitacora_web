@@ -19,7 +19,7 @@ import CrearCuenta from './components/inicioSesion/crearCuenta';
 import PrivateRoute from './components/inicioSesion/privateRoute';
 
 import BotonScroll from './components/utilidades/botonScroll';
-import LoadingModal from './components/utilidades/loading.jsx';
+import Textos from './components/contenedor/textos';
 
 function App() {
     return (
@@ -36,11 +36,11 @@ function App() {
                             <Route path="/fechas" element={<PrivateRoute element={<FechasEspeciales />} />} />
                             <Route path="/notas" element={<PrivateRoute element={<Notas titulo="Notas" texto="Escribe tus notas aquí..." clases="textarea-notas" esMensual={false} />} />} />
                             <Route path="/config" element={<PrivateRoute element={<Config />} />} />
+                            <Route path="/textos" element={<PrivateRoute element={<Textos />} />} />
                         </Routes>
                         <BotonScroll />
                     </div>
                     <NavBar />
-                    <LoadingModal/>
                 </FireProvider>
             </DataProvider>
         </BrowserRouter>

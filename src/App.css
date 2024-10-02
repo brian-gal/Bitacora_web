@@ -101,7 +101,10 @@ body {
     border: none;
 }
 
-[type=button]:not(:disabled), [type=reset]:not(:disabled), [type=submit]:not(:disabled), button:not(:disabled) {
+[type=button]:not(:disabled),
+[type=reset]:not(:disabled),
+[type=submit]:not(:disabled),
+button:not(:disabled) {
     cursor: default
 }
 
@@ -154,17 +157,18 @@ body {
 
 @keyframes rotate {
     from {
-      transform: rotate(0deg);
+        transform: rotate(0deg);
     }
+
     to {
-      transform: rotate(360deg);
+        transform: rotate(360deg);
     }
-  }
-  
-  .rotate {
+}
+
+.rotate {
     animation: rotate 2s linear infinite;
-  }
-  
+}
+
 
 /* -------------------------------------------notas---------------------------------------------- */
 .notas-container {
@@ -490,4 +494,85 @@ body {
 
 .config-cerrarSesion:hover {
     background-color: #ff1a1a;
+}
+
+/* ------------------------------------------------------textos.css --------------------------------------*/
+
+.texto-contenedor {
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+}
+
+.titulo {
+    font-size: 2em;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.texto-formulario {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.texto-input {
+    padding: 10px;
+    font-size: 1em;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+.texto-select {
+    padding: 10px;
+    font-size: 1em;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+.texto-boton {
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.texto-boton:hover {
+    background-color: #0056b3;
+}
+
+.texto-grupo {
+    margin-top: 20px;
+}
+
+.texto-tipo {
+    font-size: 1.5em;
+    color: #333;
+}
+
+.texto-lista {
+    list-style-type: none;
+    padding: 0;
+}
+
+.texto-item {
+    padding: 5px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    margin-bottom: 5px;
+    border-radius: 4px;
+}
+
+.texto-nombre {
+    font-weight: bold;
+    margin-right: 5px;
+}
+
+.texto-lista-titulo {
+    margin-top: 20px;
+    font-size: 1.8em;
 }
