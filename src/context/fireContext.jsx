@@ -120,7 +120,7 @@ export const FireProvider = ({ children }) => {
             if (savedData) {
                 return convertirAObjeto(savedData);
             }
-            if (!loading && !Swal.isVisible()) {
+            if (!loading && !Swal.isVisible() && currentLocation != "/iniciarSesion" && currentLocation != "/crearCuenta") {
                 Swal.fire({
                     title: 'Cargando...',
                     html: `
