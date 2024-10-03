@@ -4,13 +4,13 @@ import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { collection, doc, getDoc, getDocs, setDoc } from "firebase/firestore";
 import { DataContext } from "./dateContext";
-import { convertirAJson, convertirAObjeto, obtenerTituloYAño } from "../components/utilidades/funciones";
+import { convertirAJson, convertirAObjeto, initializeGlobalStorage, initializeYearlyStorage, obtenerTituloYAño } from "../components/utilidades/funciones";
 import Swal from 'sweetalert2'
 export const FireContext = createContext({});
 
 // eslint-disable-next-line react/prop-types
 export const FireProvider = ({ children }) => {
-    const { mes, año, currentLocation, fechaActual } = useContext(DataContext);
+    const { mes, año, currentLocation, fechaActual, currentFecha } = useContext(DataContext);
     const navigate = useNavigate();
     const [logueado, setLogueado] = useState(true);
     const [loading, setLoading] = useState(false);
@@ -24,16 +24,14 @@ export const FireProvider = ({ children }) => {
     const añoActual = date.getFullYear()
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
+        const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user) {
                 navigate('/');
                 const uid = user.uid
                 setUidd(uid)
-                console.log('Usuario autenticado:', uid); // Log para verificar el UID
-                manejarSesion(uid)
-                obtenerColeccionFirebase(uid)
+                await manejarSesion(uid)
+                await obtenerColeccionFirebase(uid)
             } else {
-                console.log('No hay usuario autenticado'); // Log para cuando no hay usuario
                 localStorage.clear();
                 setLoading(true)
                 navigate('/iniciarSesion');
@@ -46,19 +44,6 @@ export const FireProvider = ({ children }) => {
 
     async function obtenerColeccionFirebase(uid) {
         try {
-            // Función para verificar la conectividad
-            function isOnline() {
-                return navigator.onLine;
-            }
-
-            if (!isOnline()) {
-                console.error('No tienes conexión a Internet.');
-                setTimeout(() => {
-                    obtenerColeccionFirebase(uid)
-                }, 10000);
-                return;
-            }
-
             // Verificamos si los datos globales ya están cargados
             if (datosFirebaseGlobal) {
                 console.log('Usando datos del estado global:', datosFirebaseGlobal);
@@ -68,6 +53,7 @@ export const FireProvider = ({ children }) => {
                 const globalSnapshot = await getDocs(globalCollectionRef);
 
                 if (globalSnapshot.empty) {
+                    initializeGlobalStorage(guardarDatoStorage, currentFecha)
                     console.error('No se encontraron documentos en la colección Global');
                 }
 
@@ -76,19 +62,21 @@ export const FireProvider = ({ children }) => {
                 globalSnapshot.forEach((doc) => {
                     documentosGlobal[doc.id] = convertirAObjeto(doc.data());
                 });
-                console.log(documentosGlobal);
+                console.log(documentosGlobal)
+
                 setDatosFirebaseGlobal(documentosGlobal);
             }
 
             // Si se proporciona un año, buscamos la colección correspondiente al año
             if (datosFirebaseAño) {
-                console.log('Usando datos del estado global:', datosFirebaseGlobal);
+                console.log('Usando datos del estado año:', datosFirebaseAño);
             } else {
                 const yearCollectionRef = collection(db, uid, "datos", 'PorAño');
                 const yearSnapshot = await getDocs(yearCollectionRef);
 
                 if (yearSnapshot.empty) {
-                    console.error(`No se encontraron documentos en la colección`);
+                    initializeYearlyStorage(guardarDatoStorage, currentFecha, añoActual)
+                    console.error(`No se encontraron documentos en la colección por año.`);
                 }
 
                 // Almacenar los documentos del año en un objeto
@@ -96,7 +84,7 @@ export const FireProvider = ({ children }) => {
                 yearSnapshot.forEach((doc) => {
                     documentosAño[doc.id] = convertirAObjeto(doc.data());
                 });
-                console.log(documentosAño);
+                console.log(documentosAño)
                 setDatosFirebaseAño(documentosAño);
             }
 
@@ -184,12 +172,6 @@ export const FireProvider = ({ children }) => {
                     let datos = datosFirebaseGlobal[nombre][titulo];
                     localStorage.setItem(titulo, convertirAJson(datos));
                     return datos
-                } else {
-                    if (titulo == "Config") {
-                        const datos = { metaHorasPredi: 10 }
-                        localStorage.setItem(titulo, convertirAJson(datos));
-                        return datos
-                    }
                 }
             }
 
@@ -239,10 +221,6 @@ export const FireProvider = ({ children }) => {
                 return;
             }
 
-            function isOnline() {
-                return navigator.onLine;
-            }
-
             setActivarSincronizacion(false)
             iconb.classList.add("rotate");
 
@@ -285,35 +263,35 @@ export const FireProvider = ({ children }) => {
     //sube un dato a firebase se usa dentro de otras funciones
     async function subirColeccionFirebase(titulo, uid, dato) {
         const timeout = 20000; // Tiempo de espera en milisegundos (10 segundos)
-    
+
         try {
             const collection = obtenerTituloYAño(titulo);
             const año = collection.año;
             const nombre = collection.titulo;
             const collectionName = año ? 'PorAño' : 'Global';
             const docRef = doc(db, uid, "datos", collectionName, nombre);
-    
+
             // Crea una promesa que se resolverá o rechazará después del tiempo de espera
             const setDocPromise = setDoc(docRef, {
                 [titulo]: dato
             }, { merge: true });
-    
+
             const timeoutPromise = new Promise((_, reject) => {
                 setTimeout(() => {
                     reject(new Error('Tiempo de espera agotado para subir la colección'));
                 }, timeout);
             });
-    
+
             // Espera la primera promesa que se resuelva (setDoc o timeout)
             await Promise.race([setDocPromise, timeoutPromise]);
-    
+
             console.log(`Dato subido a la colección "${collectionName}"`);
         } catch (error) {
             console.error(`Error al subir el dato "${titulo}":`, error);
             throw error; // Lanza el error para que se pueda manejar en la función padre
         }
     }
-    
+
 
     async function manejarSesion(uid) {
         // Función para verificar la conectividad

@@ -28,7 +28,7 @@ const MenuFecha = () => {
             });
         }
     };
-    
+
 
     return (
         <div className="containerMenuFecha">
