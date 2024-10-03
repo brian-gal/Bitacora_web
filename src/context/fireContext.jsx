@@ -29,9 +29,11 @@ export const FireProvider = ({ children }) => {
                 navigate('/');
                 const uid = user.uid
                 setUidd(uid)
+                console.log('Usuario autenticado:', uid); // Log para verificar el UID
                 manejarSesion(uid)
                 obtenerColeccionFirebase(uid)
             } else {
+                console.log('No hay usuario autenticado'); // Log para cuando no hay usuario
                 localStorage.clear();
                 setLoading(true)
                 navigate('/iniciarSesion');
@@ -62,7 +64,7 @@ export const FireProvider = ({ children }) => {
                 console.log('Usando datos del estado global:', datosFirebaseGlobal);
             } else {
                 // Cargar la colección "Global"
-                const globalCollectionRef = collection(db, 'usuarios', uid, 'Global');
+                const globalCollectionRef = collection(db, uid, "datos", 'Global');
                 const globalSnapshot = await getDocs(globalCollectionRef);
 
                 if (globalSnapshot.empty) {
@@ -82,7 +84,7 @@ export const FireProvider = ({ children }) => {
             if (datosFirebaseAño) {
                 console.log('Usando datos del estado global:', datosFirebaseGlobal);
             } else {
-                const yearCollectionRef = collection(db, 'usuarios', uid, 'PorAño');
+                const yearCollectionRef = collection(db, uid, "datos", 'PorAño');
                 const yearSnapshot = await getDocs(yearCollectionRef);
 
                 if (yearSnapshot.empty) {
@@ -118,7 +120,7 @@ export const FireProvider = ({ children }) => {
             if (savedData) {
                 return convertirAObjeto(savedData);
             }
-            if (!loading && !Swal.isVisible() && currentLocation != "/iniciarSesion" && currentLocation != "/crearCuenta") {
+            if (!loading && !Swal.isVisible()) {
                 Swal.fire({
                     title: 'Cargando...',
                     html: `
@@ -226,9 +228,6 @@ export const FireProvider = ({ children }) => {
         const icon = document.getElementById("miIcono");
         const iconb = document.getElementById("miIconoB");
 
-        let timeoutId;
-        let sweetAlertModalOpen = false;
-
         try {
             // Obtener el objeto de actualizaciones pendientes
             const ActualizacionPendiente = convertirAObjeto(localStorage.getItem("ActualizacionPendiente"));
@@ -244,37 +243,8 @@ export const FireProvider = ({ children }) => {
                 return navigator.onLine;
             }
 
-            if (!isOnline()) {
-                Swal.fire({
-                    title: "Parece que no tienes internet",
-                    text: "Intenta guardar los datos más tarde",
-                    icon: "warning",
-                    confirmButtonText: "Aceptar",
-                    allowOutsideClick: true,
-                });
-
-                return;
-            }
-
             setActivarSincronizacion(false)
             iconb.classList.add("rotate");
-
-            timeoutId = setTimeout(() => {
-                sweetAlertModalOpen = true;
-                Swal.fire({
-                    title: 'Hay demoras al guardar',
-                    text: 'Parece que hay problemas con la conexión. Puedes esperar a que termine o recargar la página.',
-                    icon: 'warning',
-                    allowOutsideClick: false,
-                    showConfirmButton: true,
-                    confirmButtonText: 'Recargar página',
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // Recargar la página
-                        window.location.reload();
-                    }
-                });
-            }, 10000); // 10 segundos de espera
 
             // Procesar cada clave (título) del objeto de actualizaciones pendientes, ya que la clave hace referencia al nombre para buscarlo
             for (const titulo of Object.keys(ActualizacionPendiente)) {
@@ -288,23 +258,25 @@ export const FireProvider = ({ children }) => {
                 }
             }
 
-            // Limpiar el temporizador para evitar que el modal se abra después de terminar
-            clearTimeout(timeoutId);
-
-            // Cerrar el modal si estaba abierto
-            if (sweetAlertModalOpen) {
-                Swal.close();
-            }
-
             // Una vez procesadas todas las actualizaciones, eliminar el archivo de actualizaciones
             localStorage.removeItem("ActualizacionPendiente");
             icon.classList.remove("bi-arrow-repeat");
             icon.classList.add("bi-check-circle");
         } catch (error) {
+
+            Swal.fire({
+                title: "Hay demoras al guardar",
+                text: "Intenta guardar los datos más tarde",
+                icon: "warning",
+                confirmButtonText: "Aceptar",
+                allowOutsideClick: false,
+            });
+
             icon.classList.remove("bi-check-circle");
             icon.classList.add("bi-arrow-repeat");
             console.error('Error al procesar las actualizaciones:', error);
         } finally {
+
             setActivarSincronizacion(true)
             iconb.classList.remove("rotate");
         }
@@ -312,20 +284,36 @@ export const FireProvider = ({ children }) => {
 
     //sube un dato a firebase se usa dentro de otras funciones
     async function subirColeccionFirebase(titulo, uid, dato) {
+        const timeout = 20000; // Tiempo de espera en milisegundos (10 segundos)
+    
         try {
             const collection = obtenerTituloYAño(titulo);
-            const año = collection.año
-            const nombre = collection.titulo
+            const año = collection.año;
+            const nombre = collection.titulo;
             const collectionName = año ? 'PorAño' : 'Global';
-            const docRef = doc(db, 'usuarios', uid, collectionName, nombre);
-            await setDoc(docRef, {
+            const docRef = doc(db, uid, "datos", collectionName, nombre);
+    
+            // Crea una promesa que se resolverá o rechazará después del tiempo de espera
+            const setDocPromise = setDoc(docRef, {
                 [titulo]: dato
             }, { merge: true });
+    
+            const timeoutPromise = new Promise((_, reject) => {
+                setTimeout(() => {
+                    reject(new Error('Tiempo de espera agotado para subir la colección'));
+                }, timeout);
+            });
+    
+            // Espera la primera promesa que se resuelva (setDoc o timeout)
+            await Promise.race([setDocPromise, timeoutPromise]);
+    
             console.log(`Dato subido a la colección "${collectionName}"`);
         } catch (error) {
             console.error(`Error al subir el dato "${titulo}":`, error);
+            throw error; // Lanza el error para que se pueda manejar en la función padre
         }
     }
+    
 
     async function manejarSesion(uid) {
         // Función para verificar la conectividad
@@ -348,7 +336,7 @@ export const FireProvider = ({ children }) => {
             localStorage.clear();
             deviceId = generateRandomId();
             localStorage.setItem('deviceId', deviceId);
-            const docRef = doc(db, "usuarios", uid);
+            const docRef = doc(db, uid, "datos");
             await setDoc(docRef, { deviceId }, { merge: true });
 
             // Como es un nuevo deviceId, no necesitamos cerrar la sesión, ya que no hubo comparación.
@@ -356,8 +344,8 @@ export const FireProvider = ({ children }) => {
             return;
         }
 
-        // Ahora, obtenemos el documento usuarios/{uid}
-        const docRef = doc(db, "usuarios", uid);
+        // Ahora, obtenemos el documento {uid}
+        const docRef = doc(db, uid, "datos");
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
@@ -371,7 +359,6 @@ export const FireProvider = ({ children }) => {
                     icon: "warning",
                     confirmButtonText: "Aceptar"
                 });
-                Swal.close();
                 const auth = getAuth();
                 await signOut(auth);
             } else {
