@@ -1,14 +1,15 @@
-import { useContext } from "react"
+import { useContext, useEffect, useState } from "react"
 import { DataContext } from "../../context/dateContext"
 import { NavLink } from 'react-router-dom';
 import ProgressBar from "../utilidades/progressBar";
 import { FireContext } from "../../context/fireContext";
 import Swal from "sweetalert2";
+import { cerrarSesion } from "../utilidades/funciones";
 
 
 const MenuFecha = () => {
     const { fechaActual, meses, dia, mes, año, retrocederMes, avanzarMes, currentLocation } = useContext(DataContext)
-    const { subirUltimasActualizaciones, activarSincronizacion, uidd } = useContext(FireContext)
+    const { subirUltimasActualizaciones, activarSincronizacion, uidd, desactivarIcono } = useContext(FireContext)
 
     const date = new Date();
     // Asegurarse de que los índices estén dentro del rango válido
@@ -18,9 +19,23 @@ const MenuFecha = () => {
     const desactivarBoton = currentLocation === "/notas" || currentLocation === "/fechas" || currentLocation === "/config" || currentLocation === "/iniciarSesion" || currentLocation === "/crearCuenta";
 
     const handleIconClick = () => {
-        const icon = document.getElementById("miIcono");
+        const icon = document.getElementById("IconoGuardar");
         if (icon.classList.contains("bi-arrow-repeat")) {
             subirUltimasActualizaciones(uidd); // Ejecutar si la clase es bi-arrow-repeat
+        } else if (icon.classList.contains("bi-exclamation-triangle-fill")) {
+            Swal.fire({
+                title: "Hubo un error al verificar la sesión",
+                text: "No se pudo comprobar si estás en la última sesión. La comprobación se reintentará cada minuto. Los datos no se guardarán en la nube hasta que se valide la sesión. Si continúas, podrías perder datos si la sesión es antigua.",
+                icon: "warning",
+                showCancelButton: true,
+                allowOutsideClick: false,
+                confirmButtonText: "Continuar",
+                cancelButtonText: "Cerrar sesión"
+            }).then((result) => {
+                if (!result.isConfirmed) {
+                    cerrarSesion()
+                }
+            });
         } else {
             Swal.fire({
                 title: "¡Datos guardados!",
@@ -33,7 +48,7 @@ const MenuFecha = () => {
     return (
         <div className="containerMenuFecha">
             <div className="menuFecha">
-                <button className="icon-sincronizar rotate" disabled={!activarSincronizacion} id="miIconoB"><i className="bi bi-arrow-repeat" id="miIcono" onClick={handleIconClick}></i></button>
+                <button className="icon-sincronizar bi bi-arrow-repeat rotate" id="IconoGuardar" onClick={handleIconClick} disabled={desactivarIcono}></button>
                 <div className="menuFechaMes">
                     <button onClick={retrocederMes} disabled={desactivarBoton}>{mesPrevio}</button>
                     <div onClick={fechaActual}>

@@ -3,7 +3,7 @@ import { useContext, useEffect, useRef } from "react";
 
 import { DataContext } from "../../context/dateContext";
 import { FireContext } from "../../context/fireContext";
-import { convertirAObjeto } from "../utilidades/funciones";
+import { cerrarSesion, convertirAObjeto } from "../utilidades/funciones";
 
 const Config = () => {
     const { currentFecha, metaHorasPredi, setMetaHorasPredi } = useContext(DataContext);
@@ -26,14 +26,7 @@ const Config = () => {
         setMetaHorasPredi(e.target.value);
     };
 
-    function cerrarSesion() {
-        const auth = getAuth();
-        signOut(auth).then(() => {
-            localStorage.clear();
-        }).catch((error) => {
-            console.log(error);
-        });
-    }
+
 
     return (
         <div className="config-container">

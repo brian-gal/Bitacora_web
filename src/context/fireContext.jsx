@@ -1,22 +1,27 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { auth, db } from '../services/firebaseConfig'; // Asegúrate de tener esta configuración
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { collection, doc, getDoc, getDocs, setDoc } from "firebase/firestore";
 import { DataContext } from "./dateContext";
-import { convertirAJson, convertirAObjeto, initializeGlobalStorage, initializeYearlyStorage, obtenerTituloYAño } from "../components/utilidades/funciones";
+import { addClass, convertirAJson, convertirAObjeto, initializeGlobalStorage, initializeYearlyStorage, obtenerTituloYAño, removeClass } from "../components/utilidades/funciones";
 import Swal from 'sweetalert2'
 export const FireContext = createContext({});
 
 // eslint-disable-next-line react/prop-types
 export const FireProvider = ({ children }) => {
     const { mes, año, currentLocation, fechaActual, currentFecha } = useContext(DataContext);
+    const location = useLocation();
+
     const navigate = useNavigate();
     const [logueado, setLogueado] = useState(true);
     const [loading, setLoading] = useState(false);
     const [datosFirebaseGlobal, setDatosFirebaseGlobal] = useState(null);
     const [datosFirebaseAño, setDatosFirebaseAño] = useState(null);
+    //bloquea la escritura y todos los botones si esta en false
     const [activarSincronizacion, setActivarSincronizacion] = useState(true);
+    //bloquea solo el icono de sincronización
+    const [desactivarIcono, setDesactivarIcono] = useState(true);
     const [uidd, setUidd] = useState(null);
 
     const date = new Date();
@@ -44,17 +49,18 @@ export const FireProvider = ({ children }) => {
 
     async function obtenerColeccionFirebase(uid) {
         try {
+            if (!navigator.onLine) {
+                throw new Error("No hay conexión a Internet. No se puedo obtener los datos de firebase.");
+            }
+
             // Verificamos si los datos globales ya están cargados
-            if (datosFirebaseGlobal) {
-                console.log('Usando datos del estado global:', datosFirebaseGlobal);
-            } else {
+            if (!datosFirebaseGlobal) {
                 // Cargar la colección "Global"
                 const globalCollectionRef = collection(db, uid, "datos", 'Global');
                 const globalSnapshot = await getDocs(globalCollectionRef);
 
                 if (globalSnapshot.empty) {
-                    initializeGlobalStorage(guardarDatoStorage, currentFecha)
-                    console.error('No se encontraron documentos en la colección Global');
+                    /* initializeGlobalStorage(guardarDatoStorage, currentFecha) */
                 }
 
                 // Almacenar los documentos globales en un objeto
@@ -62,21 +68,16 @@ export const FireProvider = ({ children }) => {
                 globalSnapshot.forEach((doc) => {
                     documentosGlobal[doc.id] = convertirAObjeto(doc.data());
                 });
-                console.log(documentosGlobal)
-
                 setDatosFirebaseGlobal(documentosGlobal);
             }
 
             // Si se proporciona un año, buscamos la colección correspondiente al año
-            if (datosFirebaseAño) {
-                console.log('Usando datos del estado año:', datosFirebaseAño);
-            } else {
+            if (!datosFirebaseAño) {
                 const yearCollectionRef = collection(db, uid, "datos", 'PorAño');
                 const yearSnapshot = await getDocs(yearCollectionRef);
 
                 if (yearSnapshot.empty) {
-                    initializeYearlyStorage(guardarDatoStorage, currentFecha, añoActual)
-                    console.error(`No se encontraron documentos en la colección por año.`);
+                    /* initializeYearlyStorage(guardarDatoStorage, currentFecha, añoActual) */
                 }
 
                 // Almacenar los documentos del año en un objeto
@@ -84,7 +85,6 @@ export const FireProvider = ({ children }) => {
                 yearSnapshot.forEach((doc) => {
                     documentosAño[doc.id] = convertirAObjeto(doc.data());
                 });
-                console.log(documentosAño)
                 setDatosFirebaseAño(documentosAño);
             }
 
@@ -93,7 +93,7 @@ export const FireProvider = ({ children }) => {
             console.error('Error al obtener los documentos de la colección:', error);
             setTimeout(() => {
                 obtenerColeccionFirebase(uid)
-            }, 10000);
+            }, 20000);
         }
     }
 
@@ -129,8 +129,8 @@ export const FireProvider = ({ children }) => {
                         // Crear un objeto de configuración para Swal.update()
                         const options = {
                             title: 'Cargando...',
+                            text: 'Esta demorando más de lo normal, parece que tienes mala conexión',
                             html: `
-                            <p>Esta demorando mas de lo normal, parece que tienes mála conexión<p/>
                                 <div class="d-flex justify-content-center">
                                     <div class="spinner-border" style="width: 2rem; height: 2rem;" role="status">
                                         <span class="visually-hidden">Loading...</span>
@@ -140,15 +140,17 @@ export const FireProvider = ({ children }) => {
                         };
 
                         // Verificar si currentLocation no es "/"
-                        if (!(currentLocation === "/" && mesActual === mes)) {
+                        if (location.pathname !== "/") {
+                         options.text = "Está tardando más de lo normal, parece que tienes una mala conexión. El proceso de carga continuará hasta completarse. Si lo prefieres, puedes volver al inicio.";
                             options.showCancelButton = true; // Habilitar el botón de cancelar
-                            options.cancelButtonText = 'Cancelar'; // Texto del botón de cancelar
+                            options.cancelButtonText = 'Volver al Inicio'; // Texto del botón de cancelar
                         }
 
                         // Actualizar el SweetAlert con las nuevas opciones
                         Swal.update(options);
                         Swal.getCancelButton().addEventListener('click', () => {
                             fechaActual()
+                            navigate('/');
                         });
 
                     }
@@ -200,29 +202,33 @@ export const FireProvider = ({ children }) => {
         localStorage.setItem(titulo, convertirAJson(data));
         localStorage.setItem('ActualizacionPendiente', convertirAJson(ActualizacionPendiente));
 
-        const icon = document.getElementById("miIcono");
-        icon.classList.remove("bi-check-circle");
-        icon.classList.add("bi-arrow-repeat");
+        const icon = document.getElementById("IconoGuardar");
+        if (!icon.classList.contains("bi-exclamation-triangle-fill")) {
+            removeClass("IconoGuardar", "bi-check-circle");
+            addClass("IconoGuardar", "bi-arrow-repeat");
+        }
     }
 
     //sube las ultimas actualizaciones y compara la fecha de ultima actualizacion
     async function subirUltimasActualizaciones(uid) {
-        const icon = document.getElementById("miIcono");
-        const iconb = document.getElementById("miIconoB");
-
         try {
+            removeClass("IconoGuardar", "bi-check-circle");
+            removeClass("IconoGuardar", "bi-exclamation-triangle-fill");
+            addClass("IconoGuardar", "bi-arrow-repeat");
+            addClass("IconoGuardar", "rotate");
+            setDesactivarIcono(true)
+            setActivarSincronizacion(false)
+
             // Obtener el objeto de actualizaciones pendientes
             const ActualizacionPendiente = convertirAObjeto(localStorage.getItem("ActualizacionPendiente"));
 
             // Si no existe el archivo de actualizaciones en el storage significa que no hay actualizaciones pendientes
             if (!ActualizacionPendiente) {
-                icon.classList.remove("bi-arrow-repeat");
-                icon.classList.add("bi-check-circle");
+                removeClass("IconoGuardar", "bi-arrow-repeat");
+                addClass("IconoGuardar", "bi-check-circle");
                 return;
             }
 
-            setActivarSincronizacion(false)
-            iconb.classList.add("rotate");
 
             // Procesar cada clave (título) del objeto de actualizaciones pendientes, ya que la clave hace referencia al nombre para buscarlo
             for (const titulo of Object.keys(ActualizacionPendiente)) {
@@ -237,11 +243,10 @@ export const FireProvider = ({ children }) => {
             }
 
             // Una vez procesadas todas las actualizaciones, eliminar el archivo de actualizaciones
+            removeClass("IconoGuardar", "bi-arrow-repeat");
+            addClass("IconoGuardar", "bi-check-circle");
             localStorage.removeItem("ActualizacionPendiente");
-            icon.classList.remove("bi-arrow-repeat");
-            icon.classList.add("bi-check-circle");
         } catch (error) {
-
             Swal.fire({
                 title: "Hay demoras al guardar",
                 text: "Intenta guardar los datos más tarde",
@@ -250,13 +255,11 @@ export const FireProvider = ({ children }) => {
                 allowOutsideClick: false,
             });
 
-            icon.classList.remove("bi-check-circle");
-            icon.classList.add("bi-arrow-repeat");
-            console.error('Error al procesar las actualizaciones:', error);
+            console.error('Error al intentar guardar:', error);
         } finally {
-
+            removeClass("IconoGuardar", "rotate");
+            setDesactivarIcono(false)
             setActivarSincronizacion(true)
-            iconb.classList.remove("rotate");
         }
     }
 
@@ -284,8 +287,6 @@ export const FireProvider = ({ children }) => {
 
             // Espera la primera promesa que se resuelva (setDoc o timeout)
             await Promise.race([setDocPromise, timeoutPromise]);
-
-            console.log(`Dato subido a la colección "${collectionName}"`);
         } catch (error) {
             console.error(`Error al subir el dato "${titulo}":`, error);
             throw error; // Lanza el error para que se pueda manejar en la función padre
@@ -294,60 +295,62 @@ export const FireProvider = ({ children }) => {
 
 
     async function manejarSesion(uid) {
-        // Función para verificar la conectividad
-        function isOnline() {
-            return navigator.onLine;
-        }
+        try {
+            if (!navigator.onLine) {
+                throw new Error("No hay conexión a Internet. No se puede manejar la sesión.");
+            }
 
-        if (!isOnline()) {
-            console.error('No tienes conexión a Internet.');
-            setTimeout(() => {
-                manejarSesion(uid)
-            }, 10000);
-            return;
-        }
+            let deviceId = localStorage.getItem('deviceId');
 
-        // Obtener o generar el deviceId
-        let deviceId = localStorage.getItem('deviceId');
-
-        if (!deviceId) {
-            localStorage.clear();
-            deviceId = generateRandomId();
-            localStorage.setItem('deviceId', deviceId);
-            const docRef = doc(db, uid, "datos");
-            await setDoc(docRef, { deviceId }, { merge: true });
-
-            // Como es un nuevo deviceId, no necesitamos cerrar la sesión, ya que no hubo comparación.
-            subirUltimasActualizaciones(uid)
-            return;
-        }
-
-        // Ahora, obtenemos el documento {uid}
-        const docRef = doc(db, uid, "datos");
-        const docSnap = await getDoc(docRef);
-
-        if (docSnap.exists()) {
-            const storedDeviceId = docSnap.data().deviceId;
-
-            // Si el ID en Firebase no coincide con el de localStorage, cerramos la sesión
-            if (storedDeviceId && storedDeviceId !== deviceId) {
-                Swal.fire({
-                    title: "Sesión en otro dispositivo",
-                    text: "Tu cuenta está activa en otro dispositivo. Vuelve a iniciar sesión aquí para continuar.",
-                    icon: "warning",
-                    confirmButtonText: "Aceptar"
-                });
-                const auth = getAuth();
-                await signOut(auth);
-            } else {
-                // Si los IDs coinciden o es la primera vez, actualizamos el deviceId en Firebase
+            if (!deviceId) {
+                localStorage.clear();
+                deviceId = generateRandomId();
+                localStorage.setItem('deviceId', deviceId);
+                const docRef = doc(db, uid, "datos");
                 await setDoc(docRef, { deviceId }, { merge: true });
+
+                // Como es un nuevo deviceId, no necesitamos cerrar la sesión, ya que no hubo comparación.
+                subirUltimasActualizaciones(uid)
+                return;
+            }
+
+            // Ahora, obtenemos el documento {uid}
+            const docRef = doc(db, uid, "datos");
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                const storedDeviceId = docSnap.data().deviceId;
+
+                // Si el ID en Firebase no coincide con el de localStorage, cerramos la sesión
+                if (storedDeviceId && storedDeviceId !== deviceId) {
+                    Swal.fire({
+                        title: "Sesión en otro dispositivo",
+                        text: "Tu cuenta está activa en otro dispositivo. Vuelve a iniciar sesión aquí para continuar.",
+                        icon: "warning",
+                        confirmButtonText: "Aceptar"
+                    });
+                    const auth = getAuth();
+                    await signOut(auth);
+                } else {
+                    // Si los IDs coinciden o es la primera vez, actualizamos el deviceId en Firebase
+                    await setDoc(docRef, { deviceId }, { merge: true });
+                    subirUltimasActualizaciones(uid)
+                }
+            } else {
+                // Si el documento no existe, lo creamos con el deviceId
+                await setDoc(docRef, { deviceId });
                 subirUltimasActualizaciones(uid)
             }
-        } else {
-            // Si el documento no existe, lo creamos con el deviceId
-            await setDoc(docRef, { deviceId });
-            subirUltimasActualizaciones(uid)
+        } catch (error) {
+            console.error(error)
+            setDesactivarIcono(false)
+            removeClass("IconoGuardar", "bi-check-circle");
+            removeClass("IconoGuardar", "bi-arrow-repeat");
+            removeClass("IconoGuardar", "rotate");
+            addClass("IconoGuardar", "bi-exclamation-triangle-fill");
+            setTimeout(() => {
+                manejarSesion(uid)
+            }, 20000);
         }
     }
 
@@ -357,7 +360,7 @@ export const FireProvider = ({ children }) => {
     }
 
     return (
-        <FireContext.Provider value={{ uidd, logueado, setLogueado, cargarDatosStorage, guardarDatoStorage, datosFirebaseGlobal, datosFirebaseAño, subirUltimasActualizaciones, activarSincronizacion }}>
+        <FireContext.Provider value={{ uidd, logueado, setLogueado, cargarDatosStorage, guardarDatoStorage, datosFirebaseGlobal, datosFirebaseAño, subirUltimasActualizaciones, activarSincronizacion, desactivarIcono }}>
             {children}
         </FireContext.Provider>
     );

@@ -99,6 +99,8 @@ body {
     position: absolute;
     left: 10px;
     border: none;
+    font-size: 1.5rem;
+
 }
 
 [type=button]:not(:disabled),
@@ -109,6 +111,11 @@ button:not(:disabled) {
 }
 
 .bi-arrow-repeat {
+    cursor: pointer;
+}
+
+.bi-exclamation-triangle-fill {
+    color: #ff4d4d;
     cursor: pointer;
 }
 

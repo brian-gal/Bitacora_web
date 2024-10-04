@@ -1,3 +1,5 @@
+import { getAuth, signOut } from "firebase/auth";
+
 export function convertirAObjeto(data) {
     if (typeof data === 'string') {
         try {
@@ -89,4 +91,25 @@ export function obtenerTituloYAño(titulo) {
     return null;
 }
 
+export function addClass(elementId, className) {
+    const element = document.getElementById(elementId);
+    if (element && !element.classList.contains(className)) {
+        element.classList.add(className);
+    }
+}
 
+export function removeClass(elementId, className) {
+    const element = document.getElementById(elementId);
+    if (element && element.classList.contains(className)) {
+        element.classList.remove(className);
+    }
+}
+
+export function cerrarSesion() {
+    const auth = getAuth();
+    signOut(auth).then(() => {
+        localStorage.clear();
+    }).catch((error) => {
+        console.log(error);
+    });
+}
