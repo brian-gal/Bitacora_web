@@ -25,7 +25,7 @@ export function convertirAJson(data) {
 }
 
 // Función para inicializar los datos globales (sin año)
-export function initializeGlobalStorage(guardarDatoStorage, currentFecha) {
+export function initializeGlobalStorage(guardarDatoStorage, currentFecha, titleKey) {
     const globalData = {
         "Config": { "metaHorasPredi": "10" },
         "FechasEspeciales": [
@@ -38,15 +38,19 @@ export function initializeGlobalStorage(guardarDatoStorage, currentFecha) {
         "Notas": { content: "", fecha: "" }
     };
 
-    for (const [key, value] of Object.entries(globalData)) {
-        if (!localStorage.getItem(key)) {
-            guardarDatoStorage(key, currentFecha, value); // Usas la función directamente
-        }
+    // Verificamos si la clave específica ya existe en localStorage
+    if (!localStorage.getItem(titleKey)) {
+        // Guardamos el dato con la clave específica
+        guardarDatoStorage(titleKey, currentFecha, globalData[titleKey]);
     }
 }
 
+
 // Función para inicializar los datos por año
-export function initializeYearlyStorage(guardarDatoStorage, currentFecha, year) {
+export function initializeYearlyStorage(guardarDatoStorage, currentFecha, year, titleKey) {
+    const date = new Date();
+    const añoActual = date.getFullYear()
+
     const yearlyData = {
         [`Informe-${year}`]: {},
         [`Enseñanzas-${year}`]: {
@@ -56,10 +60,10 @@ export function initializeYearlyStorage(guardarDatoStorage, currentFecha, year) 
         }
     };
 
-    for (const [key, value] of Object.entries(yearlyData)) {
-        if (!localStorage.getItem(key)) {
-            guardarDatoStorage(key, currentFecha, value); // Usas la función directamente
-        }
+    // Verificamos si la clave específica ya existe en localStorage
+    if (!localStorage.getItem(titleKey) && añoActual == year) {
+        // Guardamos el dato con la clave específica
+        guardarDatoStorage(titleKey, currentFecha, yearlyData[titleKey]);
     }
 }
 

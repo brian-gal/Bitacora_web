@@ -42,7 +42,7 @@ const InicioSesion = () => {
             });
             Toast.fire({
                 icon: "success",
-                title: "Has iniciado sesion con exito"
+                title: "Bienvenido a la beta de la aplicación"
             });
 
         } catch (error) {

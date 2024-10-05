@@ -4,13 +4,13 @@ import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import { useLocation, useNavigate } from "react-router-dom";
 import { collection, doc, getDoc, getDocs, setDoc } from "firebase/firestore";
 import { DataContext } from "./dateContext";
-import { addClass, convertirAJson, convertirAObjeto, initializeGlobalStorage, initializeYearlyStorage, obtenerTituloYAño, removeClass } from "../components/utilidades/funciones";
+import { addClass, convertirAJson, convertirAObjeto, obtenerTituloYAño, removeClass } from "../components/utilidades/funciones";
 import Swal from 'sweetalert2'
 export const FireContext = createContext({});
 
 // eslint-disable-next-line react/prop-types
 export const FireProvider = ({ children }) => {
-    const { mes, año, currentLocation, fechaActual, currentFecha } = useContext(DataContext);
+    const { año, fechaActual } = useContext(DataContext);
     const location = useLocation();
 
     const navigate = useNavigate();
@@ -25,7 +25,6 @@ export const FireProvider = ({ children }) => {
     const [uidd, setUidd] = useState(null);
 
     const date = new Date();
-    const mesActual = date.getMonth()
     const añoActual = date.getFullYear()
 
     useEffect(() => {
@@ -60,7 +59,7 @@ export const FireProvider = ({ children }) => {
                 const globalSnapshot = await getDocs(globalCollectionRef);
 
                 if (globalSnapshot.empty) {
-                    /* initializeGlobalStorage(guardarDatoStorage, currentFecha) */
+                    throw new Error("No hay conexión a Internet.");
                 }
 
                 // Almacenar los documentos globales en un objeto
@@ -68,6 +67,8 @@ export const FireProvider = ({ children }) => {
                 globalSnapshot.forEach((doc) => {
                     documentosGlobal[doc.id] = convertirAObjeto(doc.data());
                 });
+
+
                 setDatosFirebaseGlobal(documentosGlobal);
             }
 
@@ -77,7 +78,7 @@ export const FireProvider = ({ children }) => {
                 const yearSnapshot = await getDocs(yearCollectionRef);
 
                 if (yearSnapshot.empty) {
-                    /* initializeYearlyStorage(guardarDatoStorage, currentFecha, añoActual) */
+                    throw new Error("No hay conexión a Internet.");
                 }
 
                 // Almacenar los documentos del año en un objeto
@@ -108,7 +109,9 @@ export const FireProvider = ({ children }) => {
             if (savedData) {
                 return convertirAObjeto(savedData);
             }
+
             if (!loading && !Swal.isVisible()) {
+
                 Swal.fire({
                     title: 'Cargando...',
                     html: `
@@ -129,19 +132,26 @@ export const FireProvider = ({ children }) => {
                         // Crear un objeto de configuración para Swal.update()
                         const options = {
                             title: 'Cargando...',
-                            text: 'Esta demorando más de lo normal, parece que tienes mala conexión',
                             html: `
-                                <div class="d-flex justify-content-center">
-                                    <div class="spinner-border" style="width: 2rem; height: 2rem;" role="status">
-                                        <span class="visually-hidden">Loading...</span>
-                                    </div>
+                            <p>Está tardando más de lo normal, parece que tienes una mala conexión. El proceso de carga continuará hasta completarse.</p>
+                            <div class="d-flex justify-content-center">
+                                <div class="spinner-border" style="width: 2rem; height: 2rem;" role="status">
+                                    <span class="visually-hidden">Loading...</span>
                                 </div>
+                            </div>
                             `,
                         };
 
                         // Verificar si currentLocation no es "/"
                         if (location.pathname !== "/") {
-                         options.text = "Está tardando más de lo normal, parece que tienes una mala conexión. El proceso de carga continuará hasta completarse. Si lo prefieres, puedes volver al inicio.";
+                            options.html = `
+                            <p>Está tardando más de lo normal, parece que tienes una mala conexión. El proceso de carga continuará hasta completarse. Si lo prefieres, puedes volver al inicio.</p>
+                            <div class="d-flex justify-content-center">
+                                <div class="spinner-border" style="width: 2rem; height: 2rem;" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                            `;
                             options.showCancelButton = true; // Habilitar el botón de cancelar
                             options.cancelButtonText = 'Volver al Inicio'; // Texto del botón de cancelar
                         }
@@ -306,8 +316,11 @@ export const FireProvider = ({ children }) => {
                 localStorage.clear();
                 deviceId = generateRandomId();
                 localStorage.setItem('deviceId', deviceId);
-                const docRef = doc(db, uid, "datos");
+                const docRef = doc(db, uid, "datos", "Global", "DeviceId");
+                const docRef2 = doc(db, uid, "datos", "PorAño", "DeviceId");
+
                 await setDoc(docRef, { deviceId }, { merge: true });
+                await setDoc(docRef2, { deviceId }, { merge: true });
 
                 // Como es un nuevo deviceId, no necesitamos cerrar la sesión, ya que no hubo comparación.
                 subirUltimasActualizaciones(uid)
@@ -315,7 +328,8 @@ export const FireProvider = ({ children }) => {
             }
 
             // Ahora, obtenemos el documento {uid}
-            const docRef = doc(db, uid, "datos");
+            const docRef = doc(db, uid, "datos", "Global", "DeviceId");
+            const docRef2 = doc(db, uid, "datos", "PorAño", "DeviceId");
             const docSnap = await getDoc(docRef);
 
             if (docSnap.exists()) {
@@ -334,11 +348,13 @@ export const FireProvider = ({ children }) => {
                 } else {
                     // Si los IDs coinciden o es la primera vez, actualizamos el deviceId en Firebase
                     await setDoc(docRef, { deviceId }, { merge: true });
+                    await setDoc(docRef2, { deviceId }, { merge: true });
                     subirUltimasActualizaciones(uid)
                 }
             } else {
                 // Si el documento no existe, lo creamos con el deviceId
                 await setDoc(docRef, { deviceId });
+                await setDoc(docRef2, { deviceId });
                 subirUltimasActualizaciones(uid)
             }
         } catch (error) {
@@ -360,7 +376,7 @@ export const FireProvider = ({ children }) => {
     }
 
     return (
-        <FireContext.Provider value={{ uidd, logueado, setLogueado, cargarDatosStorage, guardarDatoStorage, datosFirebaseGlobal, datosFirebaseAño, subirUltimasActualizaciones, activarSincronizacion, desactivarIcono }}>
+        <FireContext.Provider value={{ uidd, logueado, setLogueado, cargarDatosStorage, guardarDatoStorage, datosFirebaseGlobal, datosFirebaseAño, subirUltimasActualizaciones, activarSincronizacion, desactivarIcono, loading }}>
             {children}
         </FireContext.Provider>
     );

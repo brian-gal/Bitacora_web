@@ -2,18 +2,18 @@ import { useContext, useEffect, useState } from "react";
 
 import { FireContext } from "../../context/fireContext";
 import { DataContext } from "../../context/dateContext";
-import { convertirAObjeto } from "../utilidades/funciones";
+import { convertirAObjeto, initializeYearlyStorage } from "../utilidades/funciones";
 
 const Informe = () => {
     const { dia, mes, año, currentFecha, setHorasPredi, horasPredi } = useContext(DataContext);
-    const { cargarDatosStorage, guardarDatoStorage, datosFirebaseAño, activarSincronizacion } = useContext(FireContext);
+    const { cargarDatosStorage, guardarDatoStorage, datosFirebaseAño, activarSincronizacion, loading } = useContext(FireContext);
     const [datos, setDatos] = useState(reiniciarValores());
 
     function reiniciarValores() {
         return Array.from({ length: new Date(año, mes + 1, 0).getDate() }, (_, i) => ({
             dia: i + 1,
             horas: "",
-            revisitas: "",
+            estudios: "",
             publicaciones: ""
         }));
     }
@@ -33,6 +33,10 @@ const Informe = () => {
 
                 setDatos(datosMes); // Establecer los datos correspondientes al mes
             } else {
+                if (loading) {
+                    initializeYearlyStorage(guardarDatoStorage, currentFecha, año, `Informe-${año}`);
+                }
+
                 setDatos(reiniciarValores()); // Si no hay datos, reiniciar
             }
         }
@@ -94,7 +98,7 @@ const Informe = () => {
                         <tr key={day}>
                             <td id={day === dia ? `idInformeDia-${day}` : undefined} style={{ backgroundColor: day === dia ? 'lightblue' : 'transparent' }}>{day}</td>
                             <td><input disabled={!activarSincronizacion} type="number" placeholder="Horas" value={datos.find(d => d.dia === day)?.horas || ""} onChange={handleInputChange(day, 'horas')} /></td>
-                            <td><input disabled={!activarSincronizacion} type="text" placeholder="Revisitas" value={datos.find(d => d.dia === day)?.revisitas || ""} onChange={handleInputChange(day, 'revisitas')} /></td>
+                            <td><input disabled={!activarSincronizacion} type="text" placeholder="Estudios" value={datos.find(d => d.dia === day)?.estudios || ""} onChange={handleInputChange(day, 'estudios')} /></td>
                             <td><input disabled={!activarSincronizacion} type="number" placeholder="Publicaciones" value={datos.find(d => d.dia === day)?.publicaciones || ""} onChange={handleInputChange(day, 'publicaciones')} /></td>
                         </tr>
                     ))}
@@ -103,7 +107,7 @@ const Informe = () => {
                     <tr>
                         <td><strong>Total</strong></td>
                         <td>{horasPredi}</td>
-                        <td>{datos.reduce((acc, cur) => acc + (parseFloat(cur.revisitas) || 0), 0)}</td>
+                        <td>{datos.reduce((acc, cur) => acc + (parseFloat(cur.estudios) || 0), 0)}</td>
                         <td>{datos.reduce((acc, cur) => acc + (parseFloat(cur.publicaciones) || 0), 0)}</td>
                     </tr>
                 </tfoot>

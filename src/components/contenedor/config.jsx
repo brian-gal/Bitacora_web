@@ -1,4 +1,3 @@
-import { getAuth, signOut } from "firebase/auth";
 import { useContext, useEffect, useRef } from "react";
 
 import { DataContext } from "../../context/dateContext";
@@ -7,7 +6,7 @@ import { cerrarSesion, convertirAObjeto } from "../utilidades/funciones";
 
 const Config = () => {
     const { currentFecha, metaHorasPredi, setMetaHorasPredi } = useContext(DataContext);
-    const { guardarDatoStorage, datosFirebaseGlobal, activarSincronizacion } = useContext(FireContext);
+    const { guardarDatoStorage, activarSincronizacion } = useContext(FireContext);
     const prevMetaHorasPrediRef = useRef(metaHorasPredi);
 
     useEffect(() => {
