@@ -490,11 +490,6 @@ button:not(:disabled) {
     text-align: center;
 }
 
-.config-meta h2 {
-    font-size: 24px;
-    margin-bottom: 10px;
-}
-
 .config-meta label {
     display: block;
     font-size: 18px;
@@ -600,4 +595,55 @@ button:not(:disabled) {
 .texto-lista-titulo {
     margin-top: 20px;
     font-size: 1.8em;
+}
+
+/* .........................................editarUsuario.css............................................ */
+
+.editar-usuario-title {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1.2rem;
+}
+
+.editar-usuario-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    width: 100%;
+    padding: 20px;
+    background-color: #f9f9f9;
+margin-bottom: 20px;
+}
+
+.editar-usuario-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.editar-usuario-label-group {
+    flex-grow: 1;
+}
+
+.editar-usuario-label {
+    font-weight: bold;
+}
+
+.editar-usuario-input {
+    width: 100%;
+    border: none;
+    background-color: transparent;
+    font-size: 16px;
+    margin-top: 5px;
+}
+
+.editar-usuario-icon {
+    cursor: pointer;
+    font-size: 20px;
+    color: #007bff;
+    margin-left: 10px;
+}
+
+.editar-usuario-icon:hover {
+    color: #0056b3;
 }

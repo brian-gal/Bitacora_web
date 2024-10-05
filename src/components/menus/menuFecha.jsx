@@ -57,7 +57,7 @@ const MenuFecha = () => {
                     </div>
                     <button onClick={avanzarMes} disabled={desactivarBoton || (mes == date.getMonth() && año == date.getFullYear())}>{mesSiguiente}</button>
                 </div>
-                <NavLink className="menuFecha-icon" to="/config"><i className="bi bi-list"></i></NavLink>
+                <NavLink className={({ isActive }) => isActive ? "menuFecha-icon nav-Link active" : "menuFecha-icon nav-Link"} to="/config"><i className="bi bi-list"></i></NavLink>
             </div>
             <ProgressBar />
         </div>

@@ -7,6 +7,7 @@ const CrearCuenta = () => {
     const [registerEmail, setRegisterEmail] = useState("");
     const [registerPassword, setRegisterPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+    const [registerName, setRegisterName] = useState("");
 
     //Crear cuenta
     const handleCreateAccount = async () => {
@@ -24,11 +25,18 @@ const CrearCuenta = () => {
 
         const email = registerEmail;
         const password = registerPassword;
+        const name = registerName;
 
         const auth = getAuth();
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
+
+            // Actualizar el perfil del usuario con el nombre
+            await updateProfile(user, {
+                displayName: name,
+            });
+
             // Enviar correo de verificación
             await sendEmailVerification(user);
 
@@ -36,10 +44,32 @@ const CrearCuenta = () => {
             Swal.fire("Cuenta creada exitosamente. Verifica tu correo para confirmar la cuenta.");
         } catch (error) {
             const errorCode = error.code;
-            const errorMessage = error.message;
-            // Maneja los errores de autenticación aquí
-            console.error("Error al crear la cuenta:", errorCode, errorMessage);
-            alert("Error al crear la cuenta: " + errorMessage);
+            let message;
+
+            // Manejo de errores específicos
+            switch (errorCode) {
+                case "auth/email-already-in-use":
+                    message = "El correo electrónico ya está en uso. Intenta con otro.";
+                    break;
+                case "auth/invalid-email":
+                    message = "El formato del correo electrónico es inválido.";
+                    break;
+                case "auth/operation-not-allowed":
+                    message = "La operación no está permitida. Contacta al soporte.";
+                    break;
+                case "auth/weak-password":
+                    message = "La contraseña es demasiado débil. Usa una combinación más fuerte.";
+                    break;
+                case "auth/too-many-requests":
+                    message = "Demasiadas solicitudes. Intenta nuevamente más tarde.";
+                    break;
+                case "auth/network-request-failed":
+                    message = "Problemas de conexión. Verifica tu conexión a Internet.";
+                    break;
+                default:
+                    message = "Error al crear la cuenta. Por favor intenta nuevamente: " + error;
+                    break;
+            }
         }
     };
 
@@ -48,6 +78,18 @@ const CrearCuenta = () => {
             <div className="crear-cuenta-container">
                 <h2 className="crear-cuenta-titulo">Crear Cuenta</h2>
                 <form className="form-crear-cuenta" onSubmit={(e) => e.preventDefault()}>
+                    <div className="form-group">
+                        <label className="form-label" htmlFor="registerName">Nombre</label> {/* Campo para el nombre */}
+                        <input
+                            type="text"
+                            id="registerName"
+                            className="form-input"
+                            value={registerName}
+                            onChange={(e) => setRegisterName(e.target.value)}
+                            required
+                        />
+                    </div>
+
                     <div className="form-group">
                         <label className="form-label" htmlFor="registerEmail">Correo Electrónico</label>
                         <input

@@ -20,10 +20,10 @@ const InicioSesion = () => {
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
+            const userName = user.displayName || "usuario";
 
             if (!user.emailVerified) {
                 Swal.fire("Por favor, verifica tu correo electrónico antes de iniciar sesión.");
-                // Opcional: Cerrar sesión o redirigir al usuario a una página de verificación
                 await auth.signOut();
                 return;
             }
@@ -42,14 +42,43 @@ const InicioSesion = () => {
             });
             Toast.fire({
                 icon: "success",
-                title: "Bienvenido a la beta de la aplicación"
+                title: `Bienvenido, ${userName}, a la beta de la aplicación`
             });
 
         } catch (error) {
             const errorCode = error.code;
-            const errorMessage = error.message;
-            console.error("Error al iniciar sesión:", errorCode, errorMessage);
-            Swal.fire("correo o clave incorrecto, si no tienes una cuenta create una");
+            let message;
+
+            // Manejo de errores específicos
+            switch (errorCode) {
+                case "auth/invalid-email":
+                    message = "El formato del correo electrónico es inválido.";
+                    break;
+                case "auth/user-disabled":
+                    message = "La cuenta ha sido deshabilitada. Contacta al soporte.";
+                    break;
+                case "auth/user-not-found":
+                    message = "No se encontró ninguna cuenta asociada con este correo electrónico.";
+                    break;
+                case "auth/wrong-password":
+                    message = "La contraseña es incorrecta. Verifica e intenta nuevamente.";
+                    break;
+                case "auth/too-many-requests":
+                    message = "Demasiadas solicitudes. Intenta nuevamente más tarde.";
+                    break;
+                case "auth/network-request-failed":
+                    message = "Problemas de conexión. Verifica tu conexión a Internet.";
+                    break;
+                case "auth/requires-recent-login":
+                    message = "Necesitas volver a iniciar sesión para realizar esta acción.";
+                    break;
+                default:
+                    message = "Error al iniciar sesión. Por favor verifica tu correo o contraseña: " + error;
+                    break;
+            }
+
+            // Mostrar el mensaje informativo al usuario
+            Swal.fire("Error de Inicio de Sesión", message, "error");
         }
     };
 

@@ -3,6 +3,7 @@ import { useContext, useEffect, useRef } from "react";
 import { DataContext } from "../../context/dateContext";
 import { FireContext } from "../../context/fireContext";
 import { cerrarSesion, convertirAObjeto } from "../utilidades/funciones";
+import EditarUsuario from "../inicioSesion/editarUsuario";
 
 const Config = () => {
     const { currentFecha, metaHorasPredi, setMetaHorasPredi } = useContext(DataContext);
@@ -25,13 +26,16 @@ const Config = () => {
         setMetaHorasPredi(e.target.value);
     };
 
-
-
     return (
         <div className="config-container">
-            <div className="config-meta">
-                <h2>Meta a cumplir</h2>
-                <label htmlFor="horasMeta">Horas de predicación al mes: {metaHorasPredi}</label>
+
+            <EditarUsuario />
+
+
+            <div className="config-meta editar-usuario-card">
+                <p className="editar-usuario-title">Meta a cumplir</p>
+
+                <label htmlFor="horasMeta">Horas de predicación al mes:</label>
                 <input
                     disabled={!activarSincronizacion}
                     type="range"
@@ -41,7 +45,9 @@ const Config = () => {
                     value={metaHorasPredi}
                     onChange={handleHorasChange}
                 />
+                <p>{metaHorasPredi} horas</p>
             </div>
+
 
             <button className="config-cerrarSesion" onClick={cerrarSesion}>Cerrar Sesión</button>
         </div>
