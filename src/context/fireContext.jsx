@@ -4,13 +4,13 @@ import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import { useLocation, useNavigate } from "react-router-dom";
 import { collection, doc, getDoc, getDocs, setDoc } from "firebase/firestore";
 import { DataContext } from "./dateContext";
-import { addClass, convertirAJson, convertirAObjeto, obtenerTituloYAño, removeClass } from "../components/utilidades/funciones";
+import { addClass, convertirAJson, convertirAObjeto, initializeGlobalStorage, initializeYearlyStorage, obtenerTituloYAño, removeClass } from "../components/utilidades/funciones";
 import Swal from 'sweetalert2'
 export const FireContext = createContext({});
 
 // eslint-disable-next-line react/prop-types
 export const FireProvider = ({ children }) => {
-    const { año, fechaActual } = useContext(DataContext);
+    const { año, fechaActual, currentFecha } = useContext(DataContext);
     const location = useLocation();
 
     const navigate = useNavigate();
@@ -31,16 +31,16 @@ export const FireProvider = ({ children }) => {
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user) {
+                setLoading(false)
                 navigate('/');
                 const uid = user.uid
                 setUidd(uid)
                 await manejarSesion(uid)
                 await obtenerColeccionFirebase(uid)
             } else {
-                localStorage.clear();
                 setLoading(true)
-                navigate('/iniciarSesion');
                 setLogueado(false)
+                localStorage.clear();
             }
         });
         return () => unsubscribe();
@@ -115,7 +115,7 @@ export const FireProvider = ({ children }) => {
                 Swal.fire({
                     title: 'Cargando...',
                     html: `
-                        <p>Este proceso puede demorar, si lo desea puede regresar al inicio.</p>
+                        <p>Este proceso puede demorar</p>
                         <div class="d-flex justify-content-center">
                             <div class="spinner-border" style="width: 2rem; height: 2rem;" role="status">
                                 <span class="visually-hidden">Loading...</span>
@@ -135,26 +135,27 @@ export const FireProvider = ({ children }) => {
             }
 
             const nombre = obtenerTituloYAño(titulo).titulo
+            const year = obtenerTituloYAño(titulo).año
 
-            if (datosFirebaseAño) {
+            if (datosFirebaseAño && year) {
                 if (datosFirebaseAño[nombre] && datosFirebaseAño[nombre][titulo]) {
                     const datos = datosFirebaseAño[nombre][titulo];
                     if (añoActual == año) {
                         localStorage.setItem(titulo, convertirAJson(datos));
                     }
                     return datos
+                } else if (loading) {
+                    initializeYearlyStorage(guardarDatoStorage, currentFecha, año, titulo);
                 }
-            }
-
-            if (datosFirebaseGlobal) {
+            } else if (datosFirebaseGlobal) {
                 if (datosFirebaseGlobal[nombre] && datosFirebaseGlobal[nombre][titulo]) {
                     let datos = datosFirebaseGlobal[nombre][titulo];
                     localStorage.setItem(titulo, convertirAJson(datos));
                     return datos
+                } else if (loading) {
+                    initializeGlobalStorage(guardarDatoStorage, currentFecha, titulo);
                 }
             }
-            /* initializeYearlyStorage(guardarDatoStorage, currentFecha, año, `Informe-${año}`); */
-            /* initializeGlobalStorage(guardarDatoStorage, currentFecha, "Notas"); */
         } catch (error) {
             console.error('Error al obtener los datos:', error);
         }
@@ -190,10 +191,8 @@ export const FireProvider = ({ children }) => {
     //sube las ultimas actualizaciones y compara la fecha de ultima actualizacion
     async function subirUltimasActualizaciones(uid, permitir) {
         try {
-            console.log(permitir);
-
             if (!permitir) {
-                console.log("No se permite guardar datos en la nube, por que no se ha verificado la sesión")
+                alert("Error detectado: se intentó ejecutar la función de guardado cuando no estaba permitido. La aplicación está en fase beta, por favor contacta al desarrollador para informar sobre este problema.");
                 return;
             }
 
@@ -351,10 +350,6 @@ export const FireProvider = ({ children }) => {
     function cerrarSesion() {
         // Obtener el objeto de actualizaciones pendientes
         const ActualizacionPendiente = convertirAObjeto(localStorage.getItem("ActualizacionPendiente"));
-
-        // Si no existe el archivo de actualizaciones en el storage significa que no hay actualizaciones pendientes
-        console.log(permitirGuardar);
-
         if (ActualizacionPendiente && permitirGuardar) {
             Swal.fire({
                 title: "Atención",

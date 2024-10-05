@@ -3,6 +3,7 @@ import { useContext, useEffect, useRef } from "react";
 import { DataContext } from "../../context/dateContext";
 import { FireContext } from "../../context/fireContext";
 import EditarUsuario from "../inicioSesion/editarUsuario";
+import { convertirAObjeto } from "../utilidades/funciones";
 
 const Config = () => {
     const { currentFecha, metaHorasPredi, setMetaHorasPredi } = useContext(DataContext);
@@ -29,7 +30,6 @@ const Config = () => {
         <div className="config-container">
 
             <EditarUsuario />
-
 
             <div className="config-meta editar-usuario-card">
                 <p className="editar-usuario-title">Meta a cumplir</p>

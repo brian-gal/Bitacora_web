@@ -3,8 +3,8 @@ import { DataContext } from "../../context/dateContext";
 import { FireContext } from "../../context/fireContext";
 
 const ProgressBar = () => {
-    const { horasPredi, metaHorasPredi, setMetaHorasPredi, currentFecha } = useContext(DataContext);
-    const { cargarDatosStorage, datosFirebaseGlobal, guardarDatoStorage } = useContext(FireContext);
+    const { horasPredi, metaHorasPredi, setMetaHorasPredi } = useContext(DataContext);
+    const { cargarDatosStorage, datosFirebaseGlobal } = useContext(FireContext);
 
     //cargar datos del storage
     useEffect(() => {
