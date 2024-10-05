@@ -23,6 +23,7 @@ export const FireProvider = ({ children }) => {
     //bloquea solo el icono de sincronización
     const [desactivarIcono, setDesactivarIcono] = useState(true);
     const [uidd, setUidd] = useState(null);
+    const [permitirGuardar, setPermitirGuardar] = useState(false);
 
     const date = new Date();
     const añoActual = date.getFullYear()
@@ -111,10 +112,10 @@ export const FireProvider = ({ children }) => {
             }
 
             if (!loading && !Swal.isVisible()) {
-
                 Swal.fire({
                     title: 'Cargando...',
                     html: `
+                        <p>Este proceso puede demorar, si lo desea puede regresar al inicio.</p>
                         <div class="d-flex justify-content-center">
                             <div class="spinner-border" style="width: 2rem; height: 2rem;" role="status">
                                 <span class="visually-hidden">Loading...</span>
@@ -122,49 +123,15 @@ export const FireProvider = ({ children }) => {
                         </div>
                     `,
                     allowOutsideClick: false,
-                    showConfirmButton: false, // No mostrar botón de confirmación aún
-                });
-
-                // Cambiar el mensaje y mostrar el botón "Cancelar" después de 10 segundos
-                setTimeout(() => {
-                    // Solo actualizar si el popup sigue visible
-                    if (Swal.isVisible()) {
-                        // Crear un objeto de configuración para Swal.update()
-                        const options = {
-                            title: 'Cargando...',
-                            html: `
-                            <p>Está tardando más de lo normal, parece que tienes una mala conexión. El proceso de carga continuará hasta completarse.</p>
-                            <div class="d-flex justify-content-center">
-                                <div class="spinner-border" style="width: 2rem; height: 2rem;" role="status">
-                                    <span class="visually-hidden">Loading...</span>
-                                </div>
-                            </div>
-                            `,
-                        };
-
-                        // Verificar si currentLocation no es "/"
-                        if (location.pathname !== "/") {
-                            options.html = `
-                            <p>Está tardando más de lo normal, parece que tienes una mala conexión. El proceso de carga continuará hasta completarse. Si lo prefieres, puedes volver al inicio.</p>
-                            <div class="d-flex justify-content-center">
-                                <div class="spinner-border" style="width: 2rem; height: 2rem;" role="status">
-                                    <span class="visually-hidden">Loading...</span>
-                                </div>
-                            </div>
-                            `;
-                            options.showCancelButton = true; // Habilitar el botón de cancelar
-                            options.cancelButtonText = 'Volver al Inicio'; // Texto del botón de cancelar
-                        }
-
-                        // Actualizar el SweetAlert con las nuevas opciones
-                        Swal.update(options);
-                        Swal.getCancelButton().addEventListener('click', () => {
-                            fechaActual()
-                            navigate('/');
-                        });
-
+                    showConfirmButton: location.pathname !== "/", // Mostrar botón si no estamos en "/"
+                    confirmButtonText: "Volver al Inicio",
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Ejecutar si el botón de confirmación fue presionado
+                        fechaActual();
+                        navigate('/');
                     }
-                }, 10000); // 10000 ms = 10 segundos
+                });
             }
 
             const nombre = obtenerTituloYAño(titulo).titulo
@@ -186,7 +153,8 @@ export const FireProvider = ({ children }) => {
                     return datos
                 }
             }
-
+            /* initializeYearlyStorage(guardarDatoStorage, currentFecha, año, `Informe-${año}`); */
+            /* initializeGlobalStorage(guardarDatoStorage, currentFecha, "Notas"); */
         } catch (error) {
             console.error('Error al obtener los datos:', error);
         }
@@ -220,8 +188,15 @@ export const FireProvider = ({ children }) => {
     }
 
     //sube las ultimas actualizaciones y compara la fecha de ultima actualizacion
-    async function subirUltimasActualizaciones(uid) {
+    async function subirUltimasActualizaciones(uid, permitir) {
         try {
+            console.log(permitir);
+
+            if (!permitir) {
+                console.log("No se permite guardar datos en la nube, por que no se ha verificado la sesión")
+                return;
+            }
+
             removeClass("IconoGuardar", "bi-check-circle");
             removeClass("IconoGuardar", "bi-exclamation-triangle-fill");
             addClass("IconoGuardar", "bi-arrow-repeat");
@@ -313,6 +288,7 @@ export const FireProvider = ({ children }) => {
             let deviceId = localStorage.getItem('deviceId');
 
             if (!deviceId) {
+                setPermitirGuardar(true);
                 localStorage.clear();
                 deviceId = generateRandomId();
                 localStorage.setItem('deviceId', deviceId);
@@ -323,7 +299,7 @@ export const FireProvider = ({ children }) => {
                 await setDoc(docRef2, { deviceId }, { merge: true });
 
                 // Como es un nuevo deviceId, no necesitamos cerrar la sesión, ya que no hubo comparación.
-                subirUltimasActualizaciones(uid)
+                subirUltimasActualizaciones(uid, true)
                 return;
             }
 
@@ -346,16 +322,18 @@ export const FireProvider = ({ children }) => {
                     const auth = getAuth();
                     await signOut(auth);
                 } else {
+                    setPermitirGuardar(true);
                     // Si los IDs coinciden o es la primera vez, actualizamos el deviceId en Firebase
                     await setDoc(docRef, { deviceId }, { merge: true });
                     await setDoc(docRef2, { deviceId }, { merge: true });
-                    subirUltimasActualizaciones(uid)
+                    subirUltimasActualizaciones(uid, true)
                 }
             } else {
+                setPermitirGuardar(true);
                 // Si el documento no existe, lo creamos con el deviceId
                 await setDoc(docRef, { deviceId });
                 await setDoc(docRef2, { deviceId });
-                subirUltimasActualizaciones(uid)
+                subirUltimasActualizaciones(uid, true)
             }
         } catch (error) {
             console.error(error)
@@ -370,13 +348,39 @@ export const FireProvider = ({ children }) => {
         }
     }
 
+    function cerrarSesion() {
+        // Obtener el objeto de actualizaciones pendientes
+        const ActualizacionPendiente = convertirAObjeto(localStorage.getItem("ActualizacionPendiente"));
+
+        // Si no existe el archivo de actualizaciones en el storage significa que no hay actualizaciones pendientes
+        console.log(permitirGuardar);
+
+        if (ActualizacionPendiente && permitirGuardar) {
+            Swal.fire({
+                title: "Atención",
+                text: "Por favor, primero guarda los últimos cambios y luego cierra la sesión.",
+                icon: "warning",
+                button: "Entendido"
+            });
+            return;
+        }
+
+        const auth = getAuth();
+        signOut(auth).then(() => {
+            localStorage.clear();
+            window.location.reload()
+        }).catch((error) => {
+            console.log(error);
+        });
+    }
+
     // Función para generar un ID aleatorio de 20 dígitos
     function generateRandomId() {
         return Math.random().toString(36).substr(2, 20);
     }
 
     return (
-        <FireContext.Provider value={{ uidd, logueado, setLogueado, cargarDatosStorage, guardarDatoStorage, datosFirebaseGlobal, datosFirebaseAño, subirUltimasActualizaciones, activarSincronizacion, desactivarIcono, loading }}>
+        <FireContext.Provider value={{ cerrarSesion, uidd, logueado, setLogueado, cargarDatosStorage, guardarDatoStorage, datosFirebaseGlobal, datosFirebaseAño, subirUltimasActualizaciones, activarSincronizacion, desactivarIcono, loading, permitirGuardar }}>
             {children}
         </FireContext.Provider>
     );

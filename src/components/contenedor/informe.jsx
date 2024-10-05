@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from "react";
 
 import { FireContext } from "../../context/fireContext";
 import { DataContext } from "../../context/dateContext";
-import { convertirAObjeto, initializeYearlyStorage } from "../utilidades/funciones";
+import { convertirAObjeto } from "../utilidades/funciones";
 
 const Informe = () => {
     const { dia, mes, año, currentFecha, setHorasPredi, horasPredi } = useContext(DataContext);
@@ -33,10 +33,6 @@ const Informe = () => {
 
                 setDatos(datosMes); // Establecer los datos correspondientes al mes
             } else {
-                if (loading) {
-                    initializeYearlyStorage(guardarDatoStorage, currentFecha, año, `Informe-${año}`);
-                }
-
                 setDatos(reiniciarValores()); // Si no hay datos, reiniciar
             }
         }

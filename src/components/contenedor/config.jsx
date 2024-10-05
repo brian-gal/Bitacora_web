@@ -2,12 +2,11 @@ import { useContext, useEffect, useRef } from "react";
 
 import { DataContext } from "../../context/dateContext";
 import { FireContext } from "../../context/fireContext";
-import { cerrarSesion, convertirAObjeto } from "../utilidades/funciones";
 import EditarUsuario from "../inicioSesion/editarUsuario";
 
 const Config = () => {
     const { currentFecha, metaHorasPredi, setMetaHorasPredi } = useContext(DataContext);
-    const { guardarDatoStorage, activarSincronizacion } = useContext(FireContext);
+    const { guardarDatoStorage, activarSincronizacion, cerrarSesion } = useContext(FireContext);
     const prevMetaHorasPrediRef = useRef(metaHorasPredi);
 
     useEffect(() => {

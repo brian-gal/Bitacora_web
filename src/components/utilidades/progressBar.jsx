@@ -1,7 +1,6 @@
 import { useContext, useEffect } from "react";
 import { DataContext } from "../../context/dateContext";
 import { FireContext } from "../../context/fireContext";
-import { initializeGlobalStorage } from "./funciones";
 
 const ProgressBar = () => {
     const { horasPredi, metaHorasPredi, setMetaHorasPredi, currentFecha } = useContext(DataContext);
@@ -13,8 +12,6 @@ const ProgressBar = () => {
             const datosConfig = await cargarDatosStorage("Config")
             if (datosConfig && datosConfig.metaHorasPredi) {
                 setMetaHorasPredi(datosConfig.metaHorasPredi)
-            } else {
-                initializeGlobalStorage(guardarDatoStorage, currentFecha, "Config");
             }
         }
         cargarConfig()

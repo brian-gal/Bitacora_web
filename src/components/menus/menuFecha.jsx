@@ -4,12 +4,11 @@ import { NavLink } from 'react-router-dom';
 import ProgressBar from "../utilidades/progressBar";
 import { FireContext } from "../../context/fireContext";
 import Swal from "sweetalert2";
-import { cerrarSesion } from "../utilidades/funciones";
 
 
 const MenuFecha = () => {
     const { fechaActual, meses, dia, mes, año, retrocederMes, avanzarMes, currentLocation } = useContext(DataContext)
-    const { subirUltimasActualizaciones, activarSincronizacion, uidd, desactivarIcono } = useContext(FireContext)
+    const { subirUltimasActualizaciones, uidd, desactivarIcono, permitirGuardar, cerrarSesion } = useContext(FireContext)
 
     const date = new Date();
     // Asegurarse de que los índices estén dentro del rango válido
@@ -20,8 +19,8 @@ const MenuFecha = () => {
 
     const handleIconClick = () => {
         const icon = document.getElementById("IconoGuardar");
-        if (icon.classList.contains("bi-arrow-repeat")) {
-            subirUltimasActualizaciones(uidd); // Ejecutar si la clase es bi-arrow-repeat
+        if (icon.classList.contains("bi-arrow-repeat") && !icon.classList.contains("rotate")) {
+            subirUltimasActualizaciones(uidd, permitirGuardar); // Ejecutar si la clase es bi-arrow-repeat
         } else if (icon.classList.contains("bi-exclamation-triangle-fill")) {
             Swal.fire({
                 title: "Hubo un error al verificar la sesión",

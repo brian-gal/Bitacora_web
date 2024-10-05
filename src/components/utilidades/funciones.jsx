@@ -1,4 +1,6 @@
 import { getAuth, signOut } from "firebase/auth";
+import { useContext } from "react";
+import { FireContext } from "../../context/fireContext";
 
 export function convertirAObjeto(data) {
     if (typeof data === 'string') {
@@ -107,13 +109,4 @@ export function removeClass(elementId, className) {
     if (element && element.classList.contains(className)) {
         element.classList.remove(className);
     }
-}
-
-export function cerrarSesion() {
-    const auth = getAuth();
-    signOut(auth).then(() => {
-        localStorage.clear();
-    }).catch((error) => {
-        console.log(error);
-    });
 }
