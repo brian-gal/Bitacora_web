@@ -29,11 +29,11 @@ export function initializeGlobalStorage(guardarDatoStorage, currentFecha, titleK
     const globalData = {
         "Config": { "metaHorasPredi": "10" },
         "FechasEspeciales": [
-            { "label": "Asamblea de Circuito", "date": "", "fecha": "" },
-            { "label": "Asamblea de Circuito 2", "date": "", "fecha": "" },
-            { "label": "Asamblea Regional", "date": "", "fecha": "" },
-            { "label": "Visita del superintendente", "date": "", "fecha": "" },
-            { "label": "Conmemoración", "date": "", "fecha": "" }
+            { label: 'Asamblea de Circuito', date: '', fecha: '' },
+            { label: 'Asamblea de Circuito 2', date: '', fecha: '' },
+            { label: 'Asamblea Regional', date: '', fecha: '' },
+            { label: 'Visita del superintendente', date: '', fecha: '' },
+            { label: 'Conmemoración', date: '', fecha: '' },
         ],
         "Notas": { content: "", fecha: "" }
     };

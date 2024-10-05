@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useContext } from 'react';
 import { DataContext } from '../../context/dateContext';
 import { FireContext } from '../../context/fireContext';
-import { convertirAObjeto } from '../utilidades/funciones';
+import { convertirAObjeto, initializeGlobalStorage, initializeYearlyStorage } from '../utilidades/funciones';
 
 // eslint-disable-next-line react/prop-types
 const Notas = ({ titulo, texto, clases, esMensual }) => {
@@ -45,6 +45,7 @@ const Notas = ({ titulo, texto, clases, esMensual }) => {
                         setFecha('');
                     }
                 } else {
+                    initializeYearlyStorage(guardarDatoStorage, currentFecha, año, `Enseñanzas-${año}`);
                     // Limpiar los valores si no hay datos guardados en el año
                     setContent('');
                     setInitialContent(''); // Limpiar el contenido inicial también
@@ -58,6 +59,7 @@ const Notas = ({ titulo, texto, clases, esMensual }) => {
                     setInitialContent(savedContent || '');  // Guardar el contenido inicial
                     setFecha(savedFecha || '');
                 } else {
+                    initializeGlobalStorage(guardarDatoStorage, currentFecha, "Notas");
                     setContent('');
                     setInitialContent('');  // Limpiar el contenido inicial también
                     setFecha('');

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useContext } from 'react';
 
 import { DataContext } from '../../context/dateContext';
 import { FireContext } from '../../context/fireContext';
-import { convertirAObjeto } from '../utilidades/funciones';
+import { convertirAObjeto, initializeGlobalStorage } from '../utilidades/funciones';
 
 const FechasEspeciales = () => {
     const { currentFecha } = useContext(DataContext);
@@ -29,6 +29,8 @@ const FechasEspeciales = () => {
             if (savedData) {
                 return convertirAObjeto(savedData)
             } else {
+                initializeGlobalStorage(guardarDatoStorage, currentFecha, "FechasEspeciales");
+
                 return [
                     { label: 'Asamblea de Circuito', date: '', fecha: '' },
                     { label: 'Asamblea de Circuito 2', date: '', fecha: '' },
