@@ -2,6 +2,7 @@ import { useState } from "react";
 import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
 import { Link } from 'react-router-dom';
 import Swal from "sweetalert2";
+import { errorMessage } from "../utilidades/funciones";
 
 const CrearCuenta = () => {
     const [registerEmail, setRegisterEmail] = useState("");
@@ -43,33 +44,7 @@ const CrearCuenta = () => {
             // Mostrar mensaje al usuario
             Swal.fire("Cuenta creada exitosamente. Verifica tu correo para confirmar la cuenta.");
         } catch (error) {
-            const errorCode = error.code;
-            let message;
-
-            // Manejo de errores específicos
-            switch (errorCode) {
-                case "auth/email-already-in-use":
-                    message = "El correo electrónico ya está en uso. Intenta con otro.";
-                    break;
-                case "auth/invalid-email":
-                    message = "El formato del correo electrónico es inválido.";
-                    break;
-                case "auth/operation-not-allowed":
-                    message = "La operación no está permitida. Contacta al soporte.";
-                    break;
-                case "auth/weak-password":
-                    message = "La contraseña es demasiado débil. Usa una combinación más fuerte.";
-                    break;
-                case "auth/too-many-requests":
-                    message = "Demasiadas solicitudes. Intenta nuevamente más tarde.";
-                    break;
-                case "auth/network-request-failed":
-                    message = "Problemas de conexión. Verifica tu conexión a Internet.";
-                    break;
-                default:
-                    message = "Error al crear la cuenta. Por favor intenta nuevamente: " + error;
-                    break;
-            }
+            errorMessage(error)
         }
     };
 

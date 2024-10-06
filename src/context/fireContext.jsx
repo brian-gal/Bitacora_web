@@ -318,8 +318,7 @@ export const FireProvider = ({ children }) => {
                         icon: "warning",
                         confirmButtonText: "Aceptar"
                     });
-                    const auth = getAuth();
-                    await signOut(auth);
+                    cerrarSesion()
                 } else {
                     setPermitirGuardar(true);
                     // Si los IDs coinciden o es la primera vez, actualizamos el deviceId en Firebase

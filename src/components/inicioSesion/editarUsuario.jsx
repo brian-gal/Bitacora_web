@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { getAuth, updateProfile, updateEmail, updatePassword } from "firebase/auth";
+import { getAuth, reauthenticateWithCredential, EmailAuthProvider, updatePassword, updateProfile, updateEmail } from "firebase/auth";
 import Swal from "sweetalert2";
+import { errorMessage } from "../utilidades/funciones";
 
 const EditarUsuario = () => {
     const auth = getAuth();
@@ -35,7 +36,7 @@ const EditarUsuario = () => {
             const modal = window.bootstrap.Modal.getInstance(document.getElementById('editarModal'));
             modal.hide(); // Cierra el modal
         } catch (error) {
-            Swal.fire("Error al actualizar el nombre", error.message, "error");
+            errorMessage(error)
         }
     };
 
@@ -51,29 +52,7 @@ const EditarUsuario = () => {
             const modal = window.bootstrap.Modal.getInstance(document.getElementById('editarModal'));
             modal.hide(); // Cierra el modal
         } catch (error) {
-            let message;
-
-            // Manejo de errores específicos
-            switch (error.code) {
-                case "auth/invalid-email":
-                    message = "El correo electrónico proporcionado es inválido.";
-                    break;
-                case "auth/email-already-in-use":
-                    message = "Este correo electrónico ya está en uso por otra cuenta.";
-                    break;
-                case "auth/requires-recent-login":
-                    message = "Debes volver a iniciar sesión para poder actualizar tu correo.";
-                    break;
-                case "auth/operation-not-allowed":
-                    message = "Por favor, verifica tu correo electrónico para realizar esta operación.";
-                    break;
-                default:
-                    message = "Error al actualizar el correo: " + error;
-                    break;
-            }
-
-            // Mostrar mensaje informativo en lugar de un error crítico
-            Swal.fire("Información", message, "info");
+            errorMessage(error)
         }
     };
 
@@ -86,41 +65,52 @@ const EditarUsuario = () => {
             Swal.fire("Las contraseñas no coinciden", "", "error");
             return;
         }
+
         try {
+            const email = user.email;
+
+            // Cierra el modal de Bootstrap antes de abrir el SweetAlert
+            const bootstrapModal = window.bootstrap.Modal.getInstance(document.getElementById('editarModal'));
+            bootstrapModal.hide();
+
+            const { value: currentPassword } = await Swal.fire({
+                title: 'Reautenticación requerida',
+                input: 'password',
+                inputLabel: 'Por favor ingresa tu contraseña actual para continuar:',
+                inputPlaceholder: 'Contraseña actual',
+                inputAttributes: {
+                    autocapitalize: 'off',
+                    autocorrect: 'off'
+                },
+                showCancelButton: true,
+                confirmButtonText: 'Continuar',
+                cancelButtonText: 'Cancelar',
+                inputValidator: (value) => {
+                    if (!value) {
+                        return 'Por favor ingresa tu contraseña';
+                    }
+                },
+                backdrop: true,
+                willOpen: () => {
+                    // Establece el foco en el campo de entrada de SweetAlert
+                    Swal.getInput().focus();
+                }
+            });
+
+            // Reautenticación
+            const credential = EmailAuthProvider.credential(email, currentPassword);
+            await reauthenticateWithCredential(user, credential);
+
+            // Si la reautenticación es exitosa, cambiar la contraseña
             await updatePassword(user, newPassword);
             Swal.fire("Contraseña actualizada exitosamente");
-            const modal = window.bootstrap.Modal.getInstance(document.getElementById('editarModal'));
-            modal.hide(); // Cierra el modal
+            // Aquí puedes decidir si quieres volver a abrir el modal de Bootstrap o no
+            // bootstrapModal.show(); // Descomenta si necesitas volver a mostrar el modal
         } catch (error) {
-            const errorCode = error.code;
-            let message;
-
-            // Manejo de errores específicos
-            switch (errorCode) {
-                case "auth/requires-recent-login":
-                    message = "Debes volver a iniciar sesión para poder cambiar la contraseña.";
-                    break;
-                case "auth/weak-password":
-                    message = "La nueva contraseña es demasiado débil. Usa una combinación más fuerte.";
-                    break;
-                case "auth/operation-not-allowed":
-                    message = "La operación no está permitida. Contacta al soporte.";
-                    break;
-                case "auth/invalid-user-token":
-                    message = "Tu sesión ha caducado. Inicia sesión nuevamente.";
-                    break;
-                case "auth/network-request-failed":
-                    message = "Problemas de conexión. Verifica tu conexión a Internet.";
-                    break;
-                default:
-                    message = "Error al actualizar la contraseña. Por favor intenta nuevamente.";
-                    break;
-            }
-
-            // Mostrar el mensaje informativo al usuario
-            Swal.fire("Información", message, "info");
+            errorMessage(error);
         }
     };
+
 
     const handleOpenModal = (type) => {
         setModalType(type);
