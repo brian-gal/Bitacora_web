@@ -31,6 +31,7 @@ export const FireProvider = ({ children }) => {
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user) {
+                navigate('/');
                 setLoading(false)
                 const uid = user.uid
                 setUidd(uid)
