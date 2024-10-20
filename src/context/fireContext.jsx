@@ -32,7 +32,6 @@ export const FireProvider = ({ children }) => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user) {
                 setLoading(false)
-                navigate('/');
                 const uid = user.uid
                 setUidd(uid)
                 await manejarSesion(uid)
@@ -123,13 +122,23 @@ export const FireProvider = ({ children }) => {
                         </div>
                     `,
                     allowOutsideClick: false,
-                    showConfirmButton: location.pathname !== "/", // Mostrar botón si no estamos en "/"
-                    confirmButtonText: "Volver al Inicio",
+                    showConfirmButton: false, // Inicialmente no mostramos el botón
+                    didOpen: () => {
+                        // Usamos setTimeout para mostrar el botón después de 3 segundos
+                        setTimeout(() => {
+                            Swal.update({
+                                showConfirmButton: location.pathname !== "/", // Mostrar botón si no estamos en "/"
+                                confirmButtonText: "Volver al Inicio",
+                            });
+                        }, 3000);
+                    }
                 }).then((result) => {
                     if (result.isConfirmed) {
                         // Ejecutar si el botón de confirmación fue presionado
-                        fechaActual();
-                        navigate('/');
+                        if (location.pathname !== "/") {
+                            fechaActual();
+                            navigate('/');
+                        }
                     }
                 });
             }
